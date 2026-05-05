@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NECTA Monitor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b0d12;--bg2:#11141c;--bg3:#181c27;--border:#1f2435;--border2:#2a3048;--text:#dde1ee;--muted:#4a5272;--muted2:#666d8a;--accent:#4f9cf9;--green:#3ecf8e;--amber:#f59e0b;--red:#ef4444;--purple:#a78bfa;--font:'Syne',sans-serif;--mono:'DM Mono',monospace}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 15% 15%,rgba(79,156,249,.05) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 85% 85%,rgba(62,207,142,.03) 0%,transparent 70%);pointer-events:none;z-index:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pulse2{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}70%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+
+/* ══ PORTAL ══ */
+#portal{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.p-wrap{width:100%;max-width:500px}
+.p-header{text-align:center;margin-bottom:22px}
+.wifi-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);border-radius:99px;padding:6px 14px;font-family:var(--mono);font-size:11px;color:var(--green);margin-bottom:14px}
+.wifi-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite}
+.p-logo{font-size:26px;font-weight:800;letter-spacing:-1px}.p-logo span{color:var(--accent)}
+.p-tag{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:5px}
+.p-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;overflow:hidden;animation:fadeUp .4s ease}
+.steps{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.stp{flex:1;min-width:55px;padding:11px 5px;text-align:center;position:relative;cursor:default}
+.stp::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:transparent;transition:.3s}
+.stp.active::after{background:var(--accent)}.stp.done::after{background:var(--green)}
+.stp-n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:3px;transition:.3s}
+.stp.active .stp-n{border-color:var(--accent);color:var(--accent);background:rgba(79,156,249,.1)}
+.stp.done .stp-n{border-color:var(--green);color:var(--green);background:rgba(62,207,142,.1)}
+.stp-l{display:block;font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;transition:.3s}
+.stp.active .stp-l{color:var(--accent)}.stp.done .stp-l{color:var(--green)}
+.fsec{display:none;padding:22px 26px;animation:fadeUp .3s ease}.fsec.active{display:block}
+.sec-icon{font-size:24px;margin-bottom:8px}.sec-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.sec-desc{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.field{margin-bottom:13px}
+label{display:block;font-family:var(--mono);font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+input[type=text],input[type=password],input[type=number]{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:9px;font-family:var(--mono);font-size:13px;transition:border-color .15s,box-shadow .15s}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,156,249,.1)}
+input::placeholder{color:var(--muted)}input.err{border-color:var(--red)}
+.err-msg{display:none;font-family:var(--mono);font-size:11px;color:var(--red);margin-top:4px}.err-msg.show{display:block}
+.sbox{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:13px}
+.sbox-title{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:11px}
+.stepper-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.stepper-label{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:130px}
+.stepper-ctrl{display:flex;align-items:center;gap:7px;flex:1}
+.sp-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.sp-btn:hover{border-color:var(--accent);color:var(--accent)}
+.sp-val{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 9px;text-align:center;font-family:var(--mono);font-size:13px;font-weight:500}
+.sp-unit{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:22px}
+.bac-ctrl{display:flex;align-items:center;gap:11px}
+.bac-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.bac-btn:hover{border-color:var(--accent);color:var(--accent)}
+.bac-disp{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 12px;text-align:center}
+.bac-v{font-size:22px;font-weight:700;color:var(--accent);font-family:var(--mono);line-height:1}
+.bac-u{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.nav-btns{display:flex;gap:9px;padding:0 26px 22px}
+.btn-back{flex:0 0 auto;background:none;border:1px solid var(--border2);color:var(--muted);padding:10px 15px;border-radius:9px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-back:hover{border-color:var(--text);color:var(--text)}
+.btn-next{flex:1;background:var(--accent);color:#fff;border:none;padding:11px;border-radius:9px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s}
+.btn-next:hover{opacity:.88}.btn-next:active{transform:scale(.98)}.btn-next.green{background:var(--green)}
+.success-sec{display:none;padding:34px 26px;text-align:center;animation:fadeUp .4s ease}.success-sec.active{display:block}
+.suc-icon{font-size:46px;margin-bottom:12px;animation:pop .4s ease .2s both}
+.suc-title{font-size:18px;font-weight:800;margin-bottom:7px}
+.suc-desc{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+.summary{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:13px;text-align:left;margin-bottom:13px}
+.sum-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--mono)}
+.sum-row:last-child{border-bottom:none}.sum-k{color:var(--muted)}.sum-v{color:var(--text);font-weight:500}
+.btn-dash{width:100%;background:var(--accent);color:#fff;border:none;padding:11px;border-radius:9px;font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;transition:opacity .15s}.btn-dash:hover{opacity:.88}
+.p-footer{text-align:center;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ══ DASHBOARD ══ */
+#dashboard{display:none;position:relative;z-index:1;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:13px 26px;border-bottom:1px solid var(--border);background:rgba(11,13,18,.92);backdrop-filter:blur(10px);position:sticky;top:0;z-index:50}
+.nav-brand{font-size:16px;font-weight:800;letter-spacing:-.5px}.nav-brand span{color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:7px}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--muted)}
+.ndot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.ndot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.ndot.bl{background:var(--amber);animation:blink 1s infinite}
+.nbtn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 11px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:11px;transition:.15s}
+.nbtn:hover{border-color:var(--accent);color:var(--accent)}
+.nbtn.add{border-color:rgba(62,207,142,.4);color:var(--green)}.nbtn.add:hover{background:rgba(62,207,142,.07)}
+.nbtn.tech{border-color:rgba(167,139,250,.4);color:var(--purple)}.nbtn.tech:hover{background:rgba(167,139,250,.07)}
+.nbtn.tech.active{background:rgba(167,139,250,.15);border-color:var(--purple)}
+.stats-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.stat{background:var(--bg);padding:11px 14px}
+.stat-v{font-size:20px;font-weight:700;line-height:1}
+.stat-l{font-size:9px;font-family:var(--mono);color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.07em}
+.tabs{display:flex;gap:1px;padding:11px 26px 0;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{background:none;border:none;color:var(--muted);padding:7px 13px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.view{display:none;padding:18px 26px}.view.active{display:block}
+.two-col{display:grid;grid-template-columns:1fr 290px;gap:16px}
+.machines-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:11px}
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:.2s}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.card.warn{border-color:var(--amber)}.card.crit{border-color:var(--red);animation:pulse2 2s infinite}
+.card-head{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.card-id{font-size:10px;font-family:var(--mono);color:var(--muted)}
+.card-name{font-size:13px;font-weight:700;margin-top:1px}
+.badge{font-size:10px;font-family:var(--mono);padding:3px 7px;border-radius:4px;font-weight:500}
+.b-ok{background:rgba(62,207,142,.1);color:var(--green)}.b-warn{background:rgba(245,158,11,.1);color:var(--amber)}
+.b-crit{background:rgba(239,68,68,.1);color:var(--red)}.b-off{background:var(--bg3);color:var(--muted)}
+.card-body{padding:12px 13px}
+.lv-name{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:2px}
+.lv-row{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.bar-bg{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.pct{font-size:10px;font-family:var(--mono);color:var(--muted);min-width:30px;text-align:right}
+.divider-dash{border:none;border-top:1px dashed var(--border);margin:7px 0}
+.card-foot{padding:7px 13px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--muted)}
+.card-foot span{color:var(--accent)}
+.card-ca{padding:0 13px 9px;font-family:var(--mono);font-size:11px;display:flex;justify-content:space-between}
+.ca-val{color:var(--green);font-weight:500}
+.prediction{font-size:10px;font-family:var(--mono);color:var(--amber);margin-top:2px}
+/* Sidebar */
+.sidebar{display:flex;flex-direction:column;gap:11px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px}
+.panel-title{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.alert-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)}
+.alert-item:last-child{border-bottom:none}
+.adot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.atext{font-size:11px;font-family:var(--mono);line-height:1.5}
+.atime{font-size:10px;color:var(--muted);margin-top:1px}
+.log-box{background:var(--bg3);border-radius:6px;padding:8px;height:90px;overflow-y:auto;font-family:var(--mono);font-size:10px;line-height:1.6}
+.ll{color:var(--muted)}.ll.in{color:var(--green)}.ll.er{color:var(--red)}
+/* Ingredients */
+.ing-layout{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.ing-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.ing-card.low{border-color:var(--amber)}.ing-card.critical{border-color:var(--red)}
+.ing-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.ing-id{font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:14px}
+.ing-row{margin-bottom:12px}
+.ing-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.ing-name{font-size:11px;font-family:var(--mono)}
+.ing-val{font-size:11px;font-family:var(--mono);font-weight:500}
+.ing-bar-bg{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:2px}
+.ing-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.ing-detail{font-size:10px;font-family:var(--mono);color:var(--muted);display:flex;justify-content:space-between}
+.ing-pred{font-size:10px;font-family:var(--mono);color:var(--amber);margin-top:2px}
+.refill-btn{font-size:11px;font-family:var(--mono);padding:5px 11px;border:1px solid var(--green);color:var(--green);background:none;border-radius:5px;cursor:pointer;transition:.15s;margin-top:9px}
+.refill-btn:hover{background:rgba(62,207,142,.1)}
+/* Stats */
+.stats-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.chart-sub{font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:14px}
+.chart-wrap{position:relative;height:200px}
+.chart-wrap.tall{height:240px}
+.period-btns{display:flex;gap:5px;margin-bottom:12px}
+.period-btn{font-size:10px;font-family:var(--mono);padding:4px 10px;border:1px solid var(--border);background:none;color:var(--muted);border-radius:5px;cursor:pointer;transition:.15s}
+.period-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(79,156,249,.08)}
+/* Carte */
+#mapContainer{height:450px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.map-legend{display:flex;gap:16px;margin-top:12px;font-family:var(--mono);font-size:11px}
+.map-legend-item{display:flex;align-items:center;gap:6px}
+.map-dot{width:10px;height:10px;border-radius:50%}
+/* CA */
+.ca-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.price-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.price-title{font-size:13px;font-weight:700;margin-bottom:14px}
+.price-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;font-family:var(--mono)}
+.price-row:last-child{border-bottom:none}
+.price-input{width:70px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-family:var(--mono);font-size:12px;text-align:center}
+.price-input:focus{outline:none;border-color:var(--accent)}
+.ca-summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.ca-big{font-size:32px;font-weight:800;color:var(--green);line-height:1;margin-bottom:4px}
+.ca-period{font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:16px}
+.ca-rank-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;font-family:var(--mono)}
+.ca-rank-row:last-child{border-bottom:none}
+.ca-rank-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:3px;overflow:hidden}
+.ca-rank-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s}
+/* ══ TECHNICIEN ══ */
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
+@keyframes techGlow{0%,100%{box-shadow:0 2px 20px rgba(0,0,0,.4)}55%{box-shadow:0 2px 28px rgba(239,68,68,.2),0 0 0 1px rgba(239,68,68,.15)}}
+#techView{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);overflow-y:auto}
+#techView::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 5% 5%,rgba(79,156,249,.05) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 95% 95%,rgba(167,139,250,.04) 0%,transparent 60%);pointer-events:none}
+.tech-inner{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:18px 22px}
+.tech-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.tech-brand{display:flex;align-items:center;gap:10px}
+.tech-brand-text{font-size:16px;font-weight:800}
+.tech-brand-text span{color:var(--accent)}
+.tech-role-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:99px;padding:4px 11px;font-family:var(--mono);font-size:10px;color:var(--amber)}
+.tech-role-dot{width:5px;height:5px;border-radius:50%;background:var(--amber);animation:blink 1.5s infinite}
+.tech-close{background:none;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s}
+.tech-close:hover{border-color:var(--red);color:var(--red)}
+.tech-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.ts-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center}
+.ts-v{font-size:28px;font-weight:800;line-height:1;margin-bottom:3px}
+.ts-l{font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.tech-sort-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.tc{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;animation:slideInLeft .35s ease both;transition:border-color .2s,box-shadow .2s}
+.tc:hover{border-color:var(--border2)}
+.tc.warn{border-color:rgba(245,158,11,.4)}
+.tc.crit{border-color:rgba(239,68,68,.5);animation:slideInLeft .35s ease both,techGlow 2.5s ease-in-out infinite}
+.tc.off{opacity:.55}
+.tc-strip{width:4px;flex-shrink:0}
+.tc-content{flex:1;padding:16px 18px}
+.tc-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.tc-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;font-family:var(--mono);flex-shrink:0;border:2px solid}
+.tc-meta{flex:1;min-width:0}
+.tc-name{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-loc{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
+.tc-status{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.tc-badge{font-family:var(--mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:5px;letter-spacing:.04em;border:1px solid;white-space:nowrap}
+.tc-badge.b-crit{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+.tc-badge.b-warn{background:rgba(245,158,11,.08);color:var(--amber);border-color:rgba(245,158,11,.3)}
+.tc-badge.b-ok{background:rgba(62,207,142,.08);color:var(--green);border-color:rgba(62,207,142,.25)}
+.tc-badge.b-off{background:var(--bg3);color:var(--muted);border-color:var(--border)}
+.tc-ago{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+.tc-rings{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.tc-ring-item{display:flex;flex-direction:column;align-items:center;gap:5px}
+.tc-ring-wrap{position:relative;width:50px;height:50px}
+.tc-svg{width:50px;height:50px}
+.tc-arc-bg{fill:none;stroke:rgba(255,255,255,.05);stroke-width:3.5}
+.tc-arc-fill{fill:none;stroke-width:3.5;stroke-linecap:round;transition:stroke-dasharray .9s cubic-bezier(.4,0,.2,1)}
+.tc-ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700}
+.tc-ring-label{font-size:9px;font-family:var(--mono);color:var(--muted);text-align:center;line-height:1.4}
+.tc-foot{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border)}
+.tc-issues{font-family:var(--mono);font-size:11px}
+.tc-urg{color:var(--red);font-weight:700}
+.tc-allok{color:var(--green)}
+.tc-actions{display:flex;gap:8px}
+.tc-gps{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);padding:6px 13px;border:1px solid var(--accent);color:var(--accent);background:none;border-radius:6px;cursor:pointer;text-decoration:none;transition:.15s}
+.tc-gps:hover{background:rgba(79,156,249,.1)}
+@media(max-width:640px){.tc-rings{grid-template-columns:repeat(3,1fr)}.tech-summary{grid-template-columns:repeat(2,1fr)}.tech-inner{padding:14px 15px}}
+/* Telegram */
+.telegram-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.tg-status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;margin-bottom:14px}
+.tg-dot{width:7px;height:7px;border-radius:50%}
+/* Boissons */
+.drinks-layout{display:grid;grid-template-columns:190px 1fr;gap:16px}
+.mlist{display:flex;flex-direction:column;gap:5px}
+.mitem{padding:8px 11px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:.15s;font-size:12px;font-weight:600}
+.mitem:hover,.mitem.active{background:var(--bg3);border-color:var(--accent);color:var(--accent)}
+.mitem .msub{font-size:10px;font-family:var(--mono);color:var(--muted);font-weight:400;margin-top:2px}
+.drinks-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.d-title{font-size:14px;font-weight:700;margin-bottom:3px}
+.d-sub{font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:14px}
+.drinks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-bottom:16px}
+.drink-card{background:var(--bg3);border-radius:8px;padding:10px 11px;border:1px solid var(--border)}
+.d-icon{font-size:16px;margin-bottom:3px}.d-name{font-size:10px;font-weight:600;margin-bottom:2px;color:var(--muted)}
+.d-count{font-size:19px;font-weight:700;color:var(--accent);line-height:1}
+.d-ca{font-size:10px;font-family:var(--mono);color:var(--green);margin-top:1px}
+.d-bar-bg{height:3px;background:var(--border);border-radius:2px;margin-top:6px}
+.d-bar-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .5s}
+.chart-wrap-sm{position:relative;height:190px}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:440px;max-width:92vw;animation:fadeUp .3s ease}
+.modal h2{font-size:15px;font-weight:700;margin-bottom:5px}
+.modal p{font-size:12px;color:var(--muted);margin-bottom:14px;font-family:var(--mono);line-height:1.6}
+.cfg-in{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-family:var(--mono);font-size:12px;margin-bottom:7px}
+.cfg-in:focus{outline:none;border-color:var(--accent)}
+.cfg-btn{width:100%;background:var(--accent);color:#fff;border:none;padding:10px;border-radius:8px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer}
+.modal-close{margin-top:8px;background:none;border:1px solid var(--border);color:var(--muted);padding:6px 13px;border-radius:7px;cursor:pointer;font-family:var(--mono);font-size:11px}
+.del-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:.15s;flex-shrink:0}
+.del-btn:hover{border-color:var(--red);color:var(--red)}
+.del-btn.confirm{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.12);font-weight:700}
+.empty-state{text-align:center;padding:48px 20px}
+.empty-icon{font-size:42px;margin-bottom:12px}.empty-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:7px}
+.empty-desc{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.6}
+@media(max-width:768px){.stats-bar{grid-template-columns:repeat(3,1fr)}.two-col,.drinks-layout,.stats-layout,.ca-layout{grid-template-columns:1fr}.view{padding:13px 14px}nav{padding:11px 14px}.stats-bar .stat:nth-child(n+4){display:none}}
+/* ══ LOGIN ══ */
+#loginScreen{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px}
+#loginScreen::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 20%,rgba(79,156,249,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 80% 80%,rgba(62,207,142,.05) 0%,transparent 70%);pointer-events:none}
+.login-wrap{width:100%;max-width:380px;position:relative;z-index:1;animation:fadeUp .4s ease}
+.login-header{text-align:center;margin-bottom:22px}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 26px}
+.login-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.login-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.login-btn{width:100%;background:var(--accent);color:#fff;border:none;padding:12px;border-radius:9px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;margin-top:6px}
+.login-btn:hover{opacity:.88}.login-btn:active{transform:scale(.98)}
+.login-footer{text-align:center;margin-top:13px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.role-badge{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;font-weight:600;letter-spacing:.04em}
+.role-admin{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.3)}
+.role-tech{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+/* ══ TOAST ══ */
+#toastContainer{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 15px;font-family:var(--mono);font-size:12px;display:flex;align-items:center;gap:9px;animation:fadeUp .3s ease;pointer-events:auto;min-width:220px;max-width:300px;box-shadow:0 4px 24px rgba(0,0,0,.5)}
+.toast.success{border-color:rgba(62,207,142,.4)}.toast.error{border-color:rgba(239,68,68,.4)}.toast.info{border-color:rgba(79,156,249,.4)}.toast.warn{border-color:rgba(245,158,11,.4)}
+.toast-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.toast.success .toast-dot{background:var(--green)}.toast.error .toast-dot{background:var(--red)}.toast.info .toast-dot{background:var(--accent)}.toast.warn .toast-dot{background:var(--amber)}
+@keyframes fadeOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
+
+/* ══ LIGHT MODE ══ */
+body.light{--bg:#f5f7ff;--bg2:#fff;--bg3:#eef0f8;--border:#dde1f0;--border2:#c5cce0;--text:#1a1d2e;--muted:#6b7294;--muted2:#9ca3c4}
+body.light::before{background:radial-gradient(ellipse 60% 40% at 15% 15%,rgba(79,156,249,.08) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 85% 85%,rgba(62,207,142,.06) 0%,transparent 70%)}
+body.light .log-box{background:var(--bg3)}
+body.light .toast{box-shadow:0 4px 24px rgba(0,0,0,.15)}
+body.light nav{background:rgba(245,247,255,.95)}
+body.light #techView{background:var(--bg)}
+
+/* ══ NOTIFICATION BANNER ══ */
+#notifBanner{display:none;background:rgba(79,156,249,.1);border:1px solid rgba(79,156,249,.3);border-radius:10px;padding:10px 16px;margin:12px 26px 0;font-family:var(--mono);font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+#notifBanner.hidden{display:none!important}
+.notif-banner-text{color:var(--accent)}
+.notif-banner-btn{background:var(--accent);color:#fff;border:none;padding:5px 12px;border-radius:6px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
+.notif-banner-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px}
+
+/* ══ EXPORT BUTTONS ══ */
+.export-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.export-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border2);color:var(--muted2);padding:6px 13px;border-radius:7px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s}
+.export-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ══ REFILL LOG ══ */
+.refill-log-item{padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px}
+.refill-log-item:last-child{border-bottom:none}
+.refill-log-who{color:var(--accent);font-weight:600}
+.refill-log-when{color:var(--muted);font-size:10px}
+
+/* ══ WORKSPACE MANAGER ══ */
+#wsView{display:none;position:relative;z-index:1;min-height:100vh;padding:24px}
+.ws-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.ws-title{font-size:22px;font-weight:800}
+.ws-title span{color:var(--accent)}
+.ws-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px}
+.ws-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;transition:.2s;cursor:pointer}
+.ws-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.ws-card-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.ws-card-meta{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7}
+.ws-card-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(79,156,249,.1);border:1px solid rgba(79,156,249,.25);border-radius:5px;padding:3px 8px;font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:8px}
+.ws-add-card{background:none;border:2px dashed var(--border2);border-radius:14px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.2s;min-height:120px}
+.ws-add-card:hover{border-color:var(--green);color:var(--green)}
+.ws-add-icon{font-size:26px}
+.ws-add-label{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ws-add-card:hover .ws-add-label{color:var(--green)}
+
+/* ══ EDIT / QR BUTTONS IN CARD ══ */
+.edit-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:.15s;flex-shrink:0}
+.edit-btn:hover{border-color:var(--accent);color:var(--accent)}
+.qr-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:.15s;flex-shrink:0}
+.qr-btn:hover{border-color:var(--purple);color:var(--purple)}
+
+/* ══ PRINT ══ */
+@media print{
+  #loginScreen,#wsView,nav,.tabs,.stats-bar,#techView,.modal-bg,#toastContainer,#notifBanner,.del-btn,.nbtn,button{display:none!important}
+  #dashboard{display:block!important}
+  .view{display:block!important;padding:8px}
+  .view:not(.active){display:none!important}
+  body{background:#fff;color:#000}
+  .card,.ing-card{break-inside:avoid;border:1px solid #ddd;background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-header">
+      <div class="wifi-badge"><div class="wifi-dot"></div>Accès sécurisé</div>
+      <div class="p-logo" style="margin-top:10px">NECTA <span>MONITOR</span></div>
+      <div class="p-tag">PLATEFORME DE GESTION</div>
+    </div>
+    <div class="login-card">
+      <div class="login-title">Connexion</div>
+      <div class="login-sub">Entrez vos identifiants pour accéder à la plateforme.</div>
+      <div class="field">
+        <label>Identifiant</label>
+        <input type="text" id="loginUser" placeholder="Nom d'utilisateur" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="err-msg" id="loginErr">Identifiants incorrects</div>
+      <button class="login-btn" onclick="doLogin()">Se connecter →</button>
+    </div>
+    <div class="login-footer">NECTA Monitor v3.0 — Admin, Technicien &amp; Super Admin</div>
+  </div>
+</div>
+
+<!-- ══ PORTAIL ══ -->
+<div id="portal">
+<div class="p-wrap">
+  <div class="p-header">
+    <div class="wifi-badge"><div class="wifi-dot"></div>Connecté à NECTA-Config</div>
+    <div class="p-logo">NECTA <span>MONITOR</span></div>
+    <div class="p-tag">PORTAIL DE CONFIGURATION</div>
+  </div>
+  <div class="p-card">
+    <div class="steps">
+      <div class="stp active" id="stp1"><div class="stp-n">1</div><span class="stp-l">Machine</span></div>
+      <div class="stp" id="stp2"><div class="stp-n">2</div><span class="stp-l">WiFi</span></div>
+      <div class="stp" id="stp3"><div class="stp-n">3</div><span class="stp-l">Ingrédients</span></div>
+      <div class="stp" id="stp4"><div class="stp-n">4</div><span class="stp-l">Eau & GPS</span></div>
+    </div>
+    <div class="fsec active" id="fsec1">
+      <div class="sec-icon">🏪</div><div class="sec-title">Identité de la machine</div>
+      <div class="sec-desc">Ces infos apparaîtront dans le dashboard et sur la carte.</div>
+      <div class="field"><label>Nom de la machine</label><input type="text" id="pName" placeholder="ex: Marseille Centre, Aéroport T2…"><div class="err-msg" id="eN">Champ requis</div></div>
+      <div class="field"><label>Identifiant unique (ID)</label><input type="text" id="pId" placeholder="ex: necta_001"><div class="err-msg" id="eI">Champ requis</div></div>
+      <div class="field"><label>Lieu / Adresse courte</label><input type="text" id="pLieu" placeholder="ex: 13001, Zone Industrielle…"></div>
+    </div>
+    <div class="fsec" id="fsec2">
+      <div class="sec-icon">📶</div><div class="sec-title">Réseau WiFi du lieu</div>
+      <div class="sec-desc">WiFi de l'établissement où cette machine est installée.</div>
+      <div class="field"><label>Nom du réseau (SSID)</label><input type="text" id="pSsid" placeholder="Nom du WiFi"><div class="err-msg" id="eS">Champ requis</div></div>
+      <div class="field"><label>Mot de passe WiFi</label><input type="password" id="pPass" placeholder="Vide si réseau ouvert"></div>
+      <div class="field"><label>Adresse complète (pour GPS)</label><input type="text" id="pAdresse" placeholder="ex: 15 rue de la Paix, 13001 Marseille"></div>
+    </div>
+    <div class="fsec" id="fsec3">
+      <div class="sec-icon">☕</div><div class="sec-title">Remplissage initial des ingrédients</div>
+      <div class="sec-desc">Quantités au moment du remplissage. Le dashboard calcule ce qu'il reste automatiquement.</div>
+      <div class="sbox"><div class="sbox-title">☕ Café</div>
+        <div class="stepper-row"><span class="stepper-label">Quantité initiale</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('cafe',-50)">−</button><div class="sp-val" id="v_cafe">1000</div><button class="sp-btn" onclick="chgIng('cafe',50)">+</button></div><span class="sp-unit">g</span></div>
+        <div class="stepper-row"><span class="stepper-label">Dose / espresso</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('dose_cafe',-1)">−</button><div class="sp-val" id="v_dose_cafe">7</div><button class="sp-btn" onclick="chgIng('dose_cafe',1)">+</button></div><span class="sp-unit">g</span></div>
+      </div>
+      <div class="sbox"><div class="sbox-title">🍬 Sucre</div>
+        <div class="stepper-row"><span class="stepper-label">Quantité initiale</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('sucre',-50)">−</button><div class="sp-val" id="v_sucre">1000</div><button class="sp-btn" onclick="chgIng('sucre',50)">+</button></div><span class="sp-unit">g</span></div>
+        <div class="stepper-row"><span class="stepper-label">Dose / boisson</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('dose_sucre',-1)">−</button><div class="sp-val" id="v_dose_sucre">4</div><button class="sp-btn" onclick="chgIng('dose_sucre',1)">+</button></div><span class="sp-unit">g</span></div>
+      </div>
+      <div class="sbox"><div class="sbox-title">🥛 Lait en poudre</div>
+        <div class="stepper-row"><span class="stepper-label">Quantité initiale</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('lait',-50)">−</button><div class="sp-val" id="v_lait">500</div><button class="sp-btn" onclick="chgIng('lait',50)">+</button></div><span class="sp-unit">g</span></div>
+        <div class="stepper-row"><span class="stepper-label">Dose / cappuccino</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('dose_lait',-1)">−</button><div class="sp-val" id="v_dose_lait">8</div><button class="sp-btn" onclick="chgIng('dose_lait',1)">+</button></div><span class="sp-unit">g</span></div>
+      </div>
+      <div class="sbox"><div class="sbox-title">🍫 Chocolat</div>
+        <div class="stepper-row"><span class="stepper-label">Quantité initiale</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('choco',-50)">−</button><div class="sp-val" id="v_choco">500</div><button class="sp-btn" onclick="chgIng('choco',50)">+</button></div><span class="sp-unit">g</span></div>
+        <div class="stepper-row"><span class="stepper-label">Dose / chocolat</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('dose_choco',-1)">−</button><div class="sp-val" id="v_dose_choco">12</div><button class="sp-btn" onclick="chgIng('dose_choco',1)">+</button></div><span class="sp-unit">g</span></div>
+      </div>
+    </div>
+    <div class="fsec" id="fsec4">
+      <div class="sec-icon">💧</div><div class="sec-title">Eau & Gobelets</div>
+      <div class="sec-desc">Capacité du bac d'eau et stock de gobelets.</div>
+      <div class="field"><label>Capacité du bac d'eau</label>
+        <div class="bac-ctrl"><button class="bac-btn" onclick="chgBac(-5)">−</button><div class="bac-disp"><div class="bac-v" id="bacVal">20</div><div class="bac-u">litres</div></div><button class="bac-btn" onclick="chgBac(5)">+</button></div>
+      </div>
+      <div class="field"><label>Stock de gobelets</label>
+        <div class="stepper-ctrl"><button class="sp-btn" onclick="chgIng('gobelets',-10)">−</button><div class="sp-val" id="v_gobelets">200</div><button class="sp-btn" onclick="chgIng('gobelets',10)">+</button><span class="sp-unit" style="margin-left:5px">pcs</span></div>
+      </div>
+    </div>
+    <div class="success-sec" id="fsecOk">
+      <div class="suc-icon">✅</div><div class="suc-title">Machine configurée !</div>
+      <div class="suc-desc">Tous les ingrédients et paramètres enregistrés.</div>
+      <div class="summary" id="pSum"></div>
+      <button class="btn-dash" onclick="ouvrirDashboard()">Voir le dashboard →</button>
+      <button class="btn-dash" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);margin-top:8px" onclick="ajouterAutre()">+ Configurer une autre machine</button>
+    </div>
+    <div class="nav-btns" id="pNav">
+      <button class="btn-back" id="pBack" onclick="pGoBack()" style="display:none">← Retour</button>
+      <button class="btn-next" id="pNext" onclick="pGoNext()">Suivant →</button>
+    </div>
+  </div>
+  <div id="pBackDash" style="display:none;text-align:center;margin-top:10px">
+    <button onclick="ouvrirDashboard()" style="background:none;border:1px solid var(--border2);color:var(--muted2);padding:7px 18px;border-radius:8px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">← Retour au dashboard</button>
+  </div>
+  <div class="p-footer">NECTA Monitor v3.0 — ESP32-WROOM-32U</div>
+</div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="dashboard">
+<nav>
+  <div class="nav-brand">NECTA <span>MONITOR</span></div>
+  <div class="nav-right">
+    <div class="nav-status"><div class="ndot bl" id="ndot"></div><span id="nTxt">Mode démo</span></div>
+    <button class="nbtn" id="btnClients" onclick="retourWorkspaces()" style="display:none;border-color:rgba(62,207,142,.4);color:var(--green)">← Clients</button>
+    <button class="nbtn tech" id="btnTech" onclick="toggleTech()">🔧 Technicien</button>
+    <button class="nbtn add" id="btnAddMachine" onclick="retourConfig()">+ Machine</button>
+    <button class="nbtn" id="btnMqtt" onclick="document.getElementById('mqttModal').classList.add('open')">⚙ MQTT</button>
+    <button class="nbtn" id="btnCredentials" onclick="openCredentialsModal()" style="border-color:rgba(167,139,250,.4);color:var(--purple)">🔑 Comptes</button>
+    <button class="nbtn" id="btnTheme" onclick="toggleTheme()" title="Thème clair/sombre">☀</button>
+    <span id="roleTag" class="role-badge role-admin">ADMIN</span>
+    <button class="nbtn" onclick="doLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red)">Déconnexion</button>
+  </div>
+</nav>
+<div class="stats-bar">
+  <div class="stat"><div class="stat-v" id="s1" style="color:var(--green)">0</div><div class="stat-l">OK</div></div>
+  <div class="stat"><div class="stat-v" id="s2" style="color:var(--amber)">0</div><div class="stat-l">À remplir</div></div>
+  <div class="stat"><div class="stat-v" id="s3" style="color:var(--red)">0</div><div class="stat-l">Urgentes</div></div>
+  <div class="stat"><div class="stat-v" id="s4" style="color:var(--accent)">0</div><div class="stat-l">Boissons/j</div></div>
+  <div class="stat"><div class="stat-v" id="s5" style="color:var(--green)">0 €</div><div class="stat-l">CA aujourd'hui</div></div>
+  <div class="stat"><div class="stat-v" id="s6" style="color:#60c3f9">— L</div><div class="stat-l">Eau moy.</div></div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('machines',this)">Mes machines</button>
+  <button class="tab" onclick="switchTab('ingredients',this)">Ingrédients</button>
+  <button class="tab" onclick="switchTab('stats',this)">Statistiques</button>
+  <button class="tab" onclick="switchTab('carte',this)">Carte</button>
+  <button class="tab" onclick="switchTab('ca',this)">Chiffre d'affaires</button>
+  <button class="tab" onclick="switchTab('boissons',this)">Boissons</button>
+  <button class="tab" onclick="switchTab('alertes',this)">Alertes & Telegram</button>
+</div>
+
+<div id="notifBanner" class="hidden">
+  <span class="notif-banner-text">🔔 Activez les notifications navigateur pour recevoir des alertes urgentes en temps réel.</span>
+  <div style="display:flex;gap:6px;align-items:center">
+    <button class="notif-banner-btn" onclick="requestNotifPermission()">Activer</button>
+    <button class="notif-banner-close" onclick="document.getElementById('notifBanner').classList.add('hidden')">✕</button>
+  </div>
+</div>
+<div class="view active" id="v-machines">
+  <div class="export-bar">
+    <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="export-btn" onclick="exportPDF()">🖨 Export PDF</button>
+  </div>
+  <div class="two-col">
+    <div class="machines-grid" id="machinesGrid"></div>
+    <div class="sidebar">
+      <div class="panel"><div class="panel-title">Alertes récentes</div><div id="alertsList"><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune alerte</div></div></div>
+      <div class="panel"><div class="panel-title">Log MQTT</div><div class="log-box" id="logBox"><div class="ll in">$ dashboard prêt</div></div></div>
+      <div class="panel"><div class="panel-title">Tournées urgentes</div><div id="tourneesPanel"><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune tournée urgente</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="v-ingredients">
+  <div class="ing-layout" id="ingGrid"></div>
+</div>
+
+<div class="view" id="v-stats">
+  <div class="period-btns">
+    <button class="period-btn active" onclick="setPeriod('day',this)">Aujourd'hui</button>
+    <button class="period-btn" onclick="setPeriod('week',this)">7 jours</button>
+    <button class="period-btn" onclick="setPeriod('month',this)">30 jours</button>
+  </div>
+  <div class="stats-layout">
+    <div class="chart-card full"><div class="chart-title">Ventes par heure</div><div class="chart-sub">Boissons distribuées par tranche horaire</div><div class="chart-wrap tall"><canvas id="chartHour"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Ventes par machine</div><div class="chart-sub">Comparaison du parc</div><div class="chart-wrap"><canvas id="chartMachines"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Tendance hebdo</div><div class="chart-sub">Évolution sur 7 jours</div><div class="chart-wrap"><canvas id="chartTrend"></canvas></div></div>
+  </div>
+</div>
+
+<div class="view" id="v-carte">
+  <div id="mapContainer"></div>
+  <div class="map-legend">
+    <div class="map-legend-item"><div class="map-dot" style="background:var(--green)"></div>OK</div>
+    <div class="map-legend-item"><div class="map-dot" style="background:var(--amber)"></div>À remplir</div>
+    <div class="map-legend-item"><div class="map-dot" style="background:var(--red)"></div>Urgent</div>
+    <div class="map-legend-item"><div class="map-dot" style="background:var(--muted)"></div>Hors ligne</div>
+  </div>
+  <div style="font-size:11px;font-family:var(--mono);color:var(--muted);margin-top:8px">Les positions sont basées sur l'adresse configurée. Renseignez une adresse complète lors de la configuration pour un positionnement précis.</div>
+</div>
+
+<div class="view" id="v-ca">
+  <div class="ca-layout">
+    <div class="price-card">
+      <div class="price-title">Prix par boisson (€)</div>
+      <div id="priceRows"></div>
+      <button style="margin-top:12px;width:100%;background:var(--accent);color:#fff;border:none;padding:9px;border-radius:7px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer" onclick="savePrices()">Enregistrer les prix</button>
+    </div>
+    <div>
+      <div class="ca-summary-card" style="margin-bottom:14px">
+        <div style="font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:6px">CA TOTAL AUJOURD'HUI</div>
+        <div class="ca-big" id="caTotalBig">0,00 €</div>
+        <div class="ca-period">Basé sur les ventes et les prix configurés</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+          <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;color:var(--accent)" id="caMoisBig">0,00 €</div><div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:2px">Ce mois (estimé)</div></div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;color:var(--purple)" id="caMoyBig">0,00 €</div><div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:2px">Par machine/j</div></div>
+        </div>
+      </div>
+      <div class="ca-summary-card">
+        <div style="font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:12px">CLASSEMENT PAR MACHINE</div>
+        <div id="caRanking"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="v-boissons">
+  <div class="drinks-layout">
+    <div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:9px;text-transform:uppercase;letter-spacing:.08em">Machine</div>
+      <div class="mlist" id="machineList"></div>
+    </div>
+    <div class="drinks-panel">
+      <div class="d-title" id="dTitle">Toutes les machines</div>
+      <div class="d-sub" id="dSub">Cumul total — aujourd'hui</div>
+      <div class="drinks-grid" id="drinksGrid"></div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:9px;text-transform:uppercase;letter-spacing:.08em">Répartition</div>
+      <div class="chart-wrap-sm"><canvas id="dChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="v-alertes">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="telegram-panel">
+      <div class="chart-title" style="margin-bottom:8px">🤖 Notifications Telegram</div>
+      <div class="chart-sub" style="margin-bottom:14px">Recevez une alerte automatique sur Telegram quand un ingrédient est critique.</div>
+      <div id="tgStatus" class="tg-status"><div class="tg-dot" style="background:var(--muted)"></div><span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Non configuré</span></div>
+      <div class="field"><label>Token du Bot Telegram</label><input type="text" class="cfg-in" id="tgToken" placeholder="123456789:ABC-DEF1234..." style="margin-bottom:0"></div>
+      <div class="field" style="margin-top:8px"><label>Chat ID (votre ID)</label><input type="text" class="cfg-in" id="tgChatId" placeholder="ex: 123456789" style="margin-bottom:0"></div>
+      <button onclick="testTelegram()" style="margin-top:10px;width:100%;background:rgba(79,156,249,.15);border:1px solid var(--accent);color:var(--accent);padding:9px;border-radius:8px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer">Tester la connexion</button>
+      <button onclick="saveTelegram()" style="margin-top:7px;width:100%;background:var(--accent);color:#fff;border:none;padding:9px;border-radius:8px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer">Enregistrer</button>
+      <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:8px">
+        <div style="font-size:11px;font-weight:700;margin-bottom:8px">Comment créer votre bot :</div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--muted);line-height:1.8">1. Ouvrez Telegram, cherchez @BotFather<br>2. Tapez /newbot et suivez les étapes<br>3. Copiez le token ici<br>4. Cherchez @userinfobot pour votre Chat ID</div>
+      </div>
+    </div>
+    <div class="price-card">
+      <div class="chart-title" style="margin-bottom:4px">⚙️ Seuils d'alerte</div>
+      <div class="chart-sub" style="margin-bottom:14px">Définissez les niveaux qui déclenchent une alerte.</div>
+      <div class="stepper-row"><span class="stepper-label" style="min-width:140px">🚨 Seuil critique</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgThresh('crit',-5)">−</button><div class="sp-val" id="v_thresh_crit">15</div><button class="sp-btn" onclick="chgThresh('crit',5)">+</button></div><span class="sp-unit">%</span></div>
+      <div class="stepper-row"><span class="stepper-label" style="min-width:140px">⚠️ Seuil avertissement</span><div class="stepper-ctrl"><button class="sp-btn" onclick="chgThresh('warn',-5)">−</button><div class="sp-val" id="v_thresh_warn">35</div><button class="sp-btn" onclick="chgThresh('warn',5)">+</button></div><span class="sp-unit">%</span></div>
+      <div style="margin-top:18px;font-size:11px;font-weight:700;margin-bottom:10px">Historique des alertes</div>
+      <div id="alertHistoire" style="max-height:220px;overflow-y:auto"></div>
+    </div>
+  </div>
+  <div class="telegram-panel" style="margin-top:0">
+    <div class="chart-title" style="margin-bottom:8px">📋 Historique des remplissages</div>
+    <div id="refillLogList" style="max-height:260px;overflow-y:auto"><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucun remplissage enregistré</div></div>
+  </div>
+</div>
+</div>
+
+<!-- MODE TECHNICIEN -->
+<div id="techView">
+  <div class="tech-inner">
+    <div class="tech-header">
+      <div class="tech-brand">
+        <div class="tech-brand-text">NECTA <span>MONITOR</span></div>
+        <div class="tech-role-pill"><div class="tech-role-dot"></div>Mode Technicien</div>
+      </div>
+      <button class="tech-close" onclick="toggleTech()">✕ Fermer</button>
+    </div>
+    <div class="tech-summary">
+      <div class="ts-card"><div class="ts-v" id="ts-total" style="color:var(--text)">—</div><div class="ts-l">Machines</div></div>
+      <div class="ts-card"><div class="ts-v" id="ts-crit" style="color:var(--red)">—</div><div class="ts-l">Urgentes</div></div>
+      <div class="ts-card"><div class="ts-v" id="ts-warn" style="color:var(--amber)">—</div><div class="ts-l">À remplir</div></div>
+      <div class="ts-card"><div class="ts-v" id="ts-ok" style="color:var(--green)">—</div><div class="ts-l">OK</div></div>
+    </div>
+    <div class="tech-sort-label">Machines triées par urgence — tournée optimisée</div>
+    <div id="techCards"></div>
+  </div>
+</div>
+
+<!-- MODAL COMPTES -->
+<div class="modal-bg" id="credentialsModal">
+  <div class="modal">
+    <h2>🔑 Gestion des comptes</h2>
+    <p>Modifiez les identifiants. Laissez le mot de passe vide pour le conserver.</p>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Compte Admin</div>
+    <input class="cfg-in" id="newAdminUser" placeholder="Identifiant admin"/>
+    <input class="cfg-in" id="newAdminPass" type="password" placeholder="Nouveau mot de passe admin"/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 8px">Compte Technicien</div>
+    <input class="cfg-in" id="newTechUser" placeholder="Identifiant technicien"/>
+    <input class="cfg-in" id="newTechPass" type="password" placeholder="Nouveau mot de passe technicien"/>
+    <button class="cfg-btn" onclick="saveNewCredentials()" style="margin-top:6px">Enregistrer</button>
+    <br><button class="modal-close" onclick="document.getElementById('credentialsModal').classList.remove('open')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL EDIT MACHINE -->
+<div class="modal-bg" id="editMachineModal">
+  <div class="modal">
+    <h2>✏ Modifier la machine</h2>
+    <p>Modifiez les informations de la machine.</p>
+    <input type="hidden" id="editMachineId"/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Nom</div>
+    <input class="cfg-in" id="editMachineName" placeholder="Nom de la machine"/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Lieu</div>
+    <input class="cfg-in" id="editMachineLieu" placeholder="Lieu / Code postal"/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Adresse complète (GPS)</div>
+    <input class="cfg-in" id="editMachineAdresse" placeholder="Adresse pour GPS"/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Capacité bac d'eau (L)</div>
+    <input class="cfg-in" id="editMachineBac" type="number" min="5" max="50" placeholder="ex: 20"/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Dose café (g/espresso)</div>
+    <input class="cfg-in" id="editMachineDoseCafe" type="number" min="1" max="20" placeholder="ex: 7"/>
+    <button class="cfg-btn" onclick="saveEditMachine()" style="margin-top:6px">Enregistrer</button>
+    <br><button class="modal-close" onclick="document.getElementById('editMachineModal').classList.remove('open')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL QR CODE -->
+<div class="modal-bg" id="qrModal">
+  <div class="modal" style="text-align:center">
+    <h2>📍 QR Code — Itinéraire GPS</h2>
+    <p id="qrMachineName" style="margin-bottom:16px"></p>
+    <div id="qrCodeContainer" style="display:inline-block;padding:14px;background:#fff;border-radius:10px;margin-bottom:14px"></div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px" id="qrUrlDisplay"></div>
+    <button class="modal-close" onclick="document.getElementById('qrModal').classList.remove('open');document.getElementById('qrCodeContainer').innerHTML=''">Fermer</button>
+  </div>
+</div>
+
+<!-- MODAL CREATE WORKSPACE -->
+<div class="modal-bg" id="wsCreateModal">
+  <div class="modal">
+    <h2>➕ Nouvel espace client</h2>
+    <p>Créez un espace isolé pour un client. Chaque espace a ses propres machines et comptes.</p>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Nom du client / espace</div>
+    <input class="cfg-in" id="wsName" placeholder="ex: Société Dupont, Hôtel Ibis..."/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 5px">Compte Admin</div>
+    <input class="cfg-in" id="wsAdminUser" placeholder="Identifiant admin"/>
+    <input class="cfg-in" id="wsAdminPass" type="password" placeholder="Mot de passe admin"/>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 5px">Compte Technicien</div>
+    <input class="cfg-in" id="wsTechUser" placeholder="Identifiant technicien"/>
+    <input class="cfg-in" id="wsTechPass" type="password" placeholder="Mot de passe technicien"/>
+    <button class="cfg-btn" onclick="createWorkspace()" style="margin-top:8px">Créer l'espace</button>
+    <br><button class="modal-close" onclick="document.getElementById('wsCreateModal').classList.remove('open')">Annuler</button>
+  </div>
+</div>
+
+<!-- WORKSPACE MANAGER VIEW -->
+<div id="wsView">
+  <div class="ws-header">
+    <div class="ws-title">NECTA <span>WORKSPACES</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="role-badge" style="background:rgba(79,156,249,.1);color:var(--accent);border:1px solid rgba(79,156,249,.3)">SUPER ADMIN</span>
+      <button class="nbtn" onclick="doLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red)">Déconnexion</button>
+    </div>
+  </div>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:18px">Gérez les espaces clients isolés. Entrez dans un espace pour voir et gérer ses machines.</div>
+  <div class="ws-grid" id="wsGrid"></div>
+</div>
+
+<!-- MODAL MQTT -->
+<div class="modal-bg" id="mqttModal">
+  <div class="modal">
+    <h2>Connexion MQTT</h2>
+    <p>Compte gratuit sur <strong>hivemq.com/cloud</strong> (sans CB). Entrez vos identifiants ici ET dans le code ESP32.</p>
+    <input class="cfg-in" id="mHost" placeholder="Broker : abc123.s1.eu.hivemq.cloud"/>
+    <input class="cfg-in" id="mPort" placeholder="Port WSS : 8884" value="8884"/>
+    <input class="cfg-in" id="mUser" placeholder="Utilisateur"/>
+    <input class="cfg-in" id="mPass" placeholder="Mot de passe" type="password"/>
+    <input class="cfg-in" id="mTopic" placeholder="Topic : vending/etat" value="vending/etat"/>
+    <button class="cfg-btn" onclick="connectMQTT()">Se connecter</button>
+    <br><button class="modal-close" onclick="document.getElementById('mqttModal').classList.remove('open')">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ══ CONSTANTES ══
+const WATER_ML={espresso:40,cafe_court:40,cafe_long:120,cafe_double:80,cappuccino:160,latte:200,chocolat:200,lait_chaud:180,the:220,soupe:200,decafeine:40,ristretto:25,americano:180,macchiato:90,sel_15:150,sel_16:150};
+const CAFE_G={espresso:7,cafe_court:7,cafe_long:10,cafe_double:14,ristretto:5,americano:8,macchiato:7,decafeine:7,cappuccino:7,latte:7};
+
+const LAIT_G={cappuccino:8,latte:10,lait_chaud:12,macchiato:4};
+const CHOCO_G={chocolat:12};
+const SUCRE_DRINKS=['espresso','cafe_court','cafe_long','cafe_double','cappuccino','latte','chocolat','ristretto','americano','macchiato','decafeine','the'];
+const ICONS={espresso:'☕',cafe_court:'☕',cafe_long:'☕',cafe_double:'☕',cappuccino:'🍵',latte:'🥛',chocolat:'🍫',lait_chaud:'🥛',the:'🍵',soupe:'🍲',decafeine:'☕',ristretto:'☕',americano:'☕',macchiato:'☕',sel_15:'—',sel_16:'—'};
+const LABELS={espresso:'Espresso',cafe_court:'Café court',cafe_long:'Café long',cafe_double:'Café double',cappuccino:'Cappuccino',latte:'Latte',chocolat:'Chocolat',lait_chaud:'Lait chaud',the:'Thé',soupe:'Soupe',decafeine:'Décaféiné',ristretto:'Ristretto',americano:'Americano',macchiato:'Macchiato',sel_15:'Sél. 15',sel_16:'Sél. 16'};
+const KEYS=Object.keys(LABELS);
+const PAL=['#4f9cf9','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#fb923c','#34d399','#60a5fa','#f472b6','#facc15','#818cf8','#2dd4bf','#fb7185','#a3e635','#c084fc','#38bdf8'];
+const DEFAULT_PRICES={espresso:0.50,cafe_court:0.50,cafe_long:0.60,cafe_double:0.80,cappuccino:0.70,latte:0.70,chocolat:0.70,lait_chaud:0.50,the:0.50,soupe:0.60,decafeine:0.50,ristretto:0.50,americano:0.60,macchiato:0.60,sel_15:0.50,sel_16:0.50};
+// Coordonnées par défaut (Marseille) — sera géocodé depuis l'adresse
+const DEFAULT_COORDS=[43.2965,5.3698];
+
+// ══ API ══
+let authToken=localStorage.getItem('nectaToken')||'';
+let currentRole=null;
+
+async function authFetch(url,options={}){
+  const res=await fetch(url,{
+    ...options,
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken,...(options.headers||{})}
+  });
+  if(res.status===401){doLogout();return null;}
+  return res;
+}
+let machines={},alerts=[],mqttClient=null,selMachine=null,dChart=null;
+let chartHour=null,chartMachines=null,chartTrend=null;
+let pStep=1,pBac=20;
+let lastTgAlert=0;
+let deleteConfirm={};
+const pIng={cafe:1000,dose_cafe:7,sucre:1000,dose_sucre:4,lait:500,dose_lait:8,choco:500,dose_choco:12,gobelets:200};
+let prices=JSON.parse(JSON.stringify(DEFAULT_PRICES));
+let threshCrit=15,threshWarn=35;
+let tgToken='',tgChatId='';
+let leafletMap=null;
+let mapMarkers={};
+let period='day';
+let techOpen=false;
+let refillLog=[];
+let workspaces={};
+let activeWorkspaceId=null;
+
+// ══ PERSISTANCE SERVEUR ══
+async function saveAll(){
+  if(!authToken||currentRole==='superadmin')return;
+  try{
+    // Sauvegarder les machines
+    await authFetch('/api/machines/bulk',{method:'POST',body:JSON.stringify({machines})});
+    // Sauvegarder les settings
+    await authFetch('/api/workspaces/settings',{method:'POST',body:JSON.stringify({prices,thresh_crit:threshCrit,thresh_warn:threshWarn})});
+  }catch(e){console.error('saveAll error:',e);}
+}
+async function loadAll(){
+  if(!authToken)return;
+  try{
+    // Charger les machines
+    const mRes=await authFetch('/api/machines');
+    if(mRes&&mRes.ok){const m=await mRes.json();if(m&&Object.keys(m).length)machines=m;}
+    // Charger les settings
+    const sRes=await authFetch('/api/workspaces/settings');
+    if(sRes&&sRes.ok){
+      const s=await sRes.json();
+      if(s.prices&&Object.keys(s.prices).length)Object.assign(prices,s.prices);
+      if(s.thresh_crit)threshCrit=s.thresh_crit;
+      if(s.thresh_warn)threshWarn=s.thresh_warn;
+      document.getElementById('v_thresh_crit').textContent=threshCrit;
+      document.getElementById('v_thresh_warn').textContent=threshWarn;
+    }
+    // Charger l'historique
+    const hRes=await authFetch('/api/history?limit=50');
+    if(hRes&&hRes.ok){refillLog=await hRes.json();}
+  }catch(e){console.error('loadAll error:',e);}
+}
+async function logIntervention(machine_id,machine_name,type,detail){
+  if(!authToken)return;
+  try{await authFetch('/api/history',{method:'POST',body:JSON.stringify({machine_id,machine_name,type,detail})});}catch(e){}
+}
+
+// ══ THEME ══
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  const btn=document.getElementById('btnTheme');
+  if(btn)btn.textContent=document.body.classList.contains('light')?'🌙':'☀';
+  try{localStorage.setItem('nectaTheme',document.body.classList.contains('light')?'light':'dark');}catch(e){}
+}
+function loadTheme(){
+  try{const t=localStorage.getItem('nectaTheme');if(t==='light'){document.body.classList.add('light');const btn=document.getElementById('btnTheme');if(btn)btn.textContent='🌙';}}catch(e){}
+}
+
+// ══ NOTIFICATIONS ══
+function requestNotifPermission(){
+  if(!('Notification' in window)){toast('Notifications non supportées','warn');return;}
+  Notification.requestPermission().then(perm=>{
+    if(perm==='granted'){toast('Notifications activées !','success');document.getElementById('notifBanner').classList.add('hidden');}
+    else toast('Notifications refusées','warn');
+  });
+}
+function sendBrowserNotif(title,body){
+  if('Notification' in window&&Notification.permission==='granted'){
+    new Notification(title,{body,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="28" font-size="28">☕</text></svg>'});
+  }
+}
+function checkNotifBanner(){
+  if(!('Notification' in window)||Notification.permission==='granted'){document.getElementById('notifBanner').classList.add('hidden');}
+  else{document.getElementById('notifBanner').classList.remove('hidden');}
+}
+
+// Données historiques simulées
+function genHistory(){
+  const h={};
+  for(let d=0;d<30;d++){
+    h[d]=Array(24).fill(0).map(()=>Math.floor(Math.random()*12+2));
+  }
+  return h;
+}
+
+// ══ AUTH (via API serveur) ══
+function _applyRole(role,workspaceName){
+  const isAdmin=(role==='admin'||role==='superadmin');
+  const isTech=(role==='tech');
+  document.getElementById('btnTech').style.display=isAdmin?'':'none';
+  document.getElementById('btnAddMachine').style.display=isAdmin?'':'none';
+  document.getElementById('btnMqtt').style.display=isAdmin?'':'none';
+  document.getElementById('btnCredentials').style.display=isAdmin?'':'none';
+  document.getElementById('btnClients').style.display='none';
+  if(role==='superadmin'||workspaceName){
+    const tag=document.getElementById('roleTag');
+    tag.textContent=role==='superadmin'?'SUPER ADMIN':(isAdmin?'ADMIN':'TECH')+(workspaceName?' — '+workspaceName:'');
+    tag.className='role-badge '+(isAdmin?'role-admin':'role-tech');
+  } else {
+    document.getElementById('roleTag').textContent=isAdmin?'ADMIN':'TECHNICIEN';
+    document.getElementById('roleTag').className='role-badge '+(isAdmin?'role-admin':'role-tech');
+  }
+}
+async function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginErr');
+  const passEl=document.getElementById('loginPass');
+  const btn=document.querySelector('.login-btn');
+  err.classList.remove('show');passEl.classList.remove('err');
+  btn.textContent='Connexion...';btn.disabled=true;
+  try{
+    const res=await fetch('/api/auth/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    if(!res.ok){throw new Error('Identifiants incorrects');}
+    const data=await res.json();
+    authToken=data.token;
+    currentRole=data.role;
+    activeWorkspaceId=data.workspaceId||null;
+    localStorage.setItem('nectaToken',authToken);
+    document.getElementById('loginScreen').style.display='none';
+    if(currentRole==='superadmin'){
+      await loadWorkspacesFromServer();
+      document.getElementById('wsView').style.display='block';
+    } else {
+      _applyRole(currentRole);
+      await loadAll();
+      ouvrirDashboard();
+      if(currentRole==='tech'&&!techOpen)toggleTech();
+    }
+  }catch(e){
+    err.textContent='Identifiants incorrects';
+    err.classList.add('show');
+    passEl.classList.add('err');
+    passEl.value='';passEl.focus();
+  }finally{
+    btn.textContent='Se connecter →';btn.disabled=false;
+  }
+}
+function doLogout(){
+  authToken='';currentRole=null;activeWorkspaceId=null;
+  localStorage.removeItem('nectaToken');
+  machines={};
+  if(techOpen){techOpen=false;document.getElementById('techView').style.display='none';document.getElementById('btnTech').classList.remove('active');}
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('portal').style.display='none';
+  document.getElementById('wsView').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginErr').classList.remove('show');
+  document.getElementById('loginPass').classList.remove('err');
+}
+function openCredentialsModal(){
+  document.getElementById('newAdminUser').value='';
+  document.getElementById('newAdminPass').value='';
+  document.getElementById('newTechUser').value='';
+  document.getElementById('newTechPass').value='';
+  document.getElementById('credentialsModal').classList.add('open');
+}
+async function saveNewCredentials(){
+  const ap=document.getElementById('newAdminPass').value;
+  if(!ap){toast('Entrez votre nouveau mot de passe','warn');return;}
+  const res=await authFetch('/api/auth/change-password',{method:'POST',body:JSON.stringify({oldPassword:document.getElementById('newAdminUser').value,newPassword:ap})});
+  if(res&&res.ok){document.getElementById('credentialsModal').classList.remove('open');toast('Mot de passe mis à jour','success');}
+  else{toast('Ancien mot de passe incorrect','error');}
+}
+
+// ══ WORKSPACES ══
+function renderWorkspaces(){
+  document.getElementById('wsView').style.display='block';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('portal').style.display='none';
+  const grid=document.getElementById('wsGrid');
+  const wsList=Object.values(workspaces);
+  grid.innerHTML='';
+  wsList.forEach(ws=>{
+    const card=document.createElement('div');
+    card.className='ws-card';
+    card.innerHTML=`<div class="ws-card-name">${ws.name}</div>
+      <div class="ws-card-meta">Admin : <b>${ws.adminUser}</b><br>Tech : <b>${ws.techUser}</b><br>Machines : <b>${Object.keys(ws.machines||{}).length}</b><br>Créé : <b>${new Date(ws.createdAt).toLocaleDateString('fr-FR')}</b></div>
+      <div class="ws-card-badge">▶ Entrer dans l'espace</div>`;
+    card.onclick=()=>enterWorkspace(ws.id);
+    grid.appendChild(card);
+  });
+  // Add new workspace card
+  const addCard=document.createElement('div');
+  addCard.className='ws-add-card';
+  addCard.innerHTML='<div class="ws-add-icon">＋</div><div class="ws-add-label">Nouvel espace client</div>';
+  addCard.onclick=()=>document.getElementById('wsCreateModal').classList.add('open');
+  grid.appendChild(addCard);
+}
+function createWorkspace(){
+  const name=document.getElementById('wsName').value.trim();
+  const adminUser=document.getElementById('wsAdminUser').value.trim();
+  const adminPass=document.getElementById('wsAdminPass').value;
+  const techUser=document.getElementById('wsTechUser').value.trim();
+  const techPass=document.getElementById('wsTechPass').value;
+  if(!name||!adminUser||!adminPass||!techUser||!techPass){toast('Tous les champs sont requis','warn');return;}
+  const id='ws_'+Date.now();
+  workspaces[id]={id,name,adminUser,adminPass,techUser,techPass,machines:{},prices:JSON.parse(JSON.stringify(DEFAULT_PRICES)),threshCrit:15,threshWarn:35,refillLog:[],createdAt:Date.now()};
+  try{localStorage.setItem('nectaWorkspaces',JSON.stringify(workspaces));}catch(e){}
+  document.getElementById('wsCreateModal').classList.remove('open');
+  ['wsName','wsAdminUser','wsAdminPass','wsTechUser','wsTechPass'].forEach(id=>document.getElementById(id).value='');
+  toast('Espace "'+name+'" créé','success');
+  renderWorkspaces();
+}
+function enterWorkspace(wsId){
+  const ws=workspaces[wsId];
+  if(!ws)return;
+  // Obtenir un token scopé pour ce workspace
+  const res=await authFetch('/api/workspaces/'+wsId+'/enter',{method:'POST'});
+  if(!res||!res.ok){toast('Erreur d\'accès au workspace','error');return;}
+  const data=await res.json();
+  authToken=data.token;
+  activeWorkspaceId=wsId;
+  localStorage.setItem('nectaToken',authToken);
+  machines={};prices=JSON.parse(JSON.stringify(DEFAULT_PRICES));
+  document.getElementById('wsView').style.display='none';
+  document.getElementById('btnTech').style.display='';
+  document.getElementById('btnAddMachine').style.display='';
+  document.getElementById('btnMqtt').style.display='';
+  document.getElementById('btnCredentials').style.display='none';
+  document.getElementById('btnClients').style.display='';
+  document.getElementById('roleTag').textContent='SUPER ADMIN — '+data.workspace.name;
+  document.getElementById('roleTag').style.cssText='background:rgba(79,156,249,.1);color:var(--accent);border:1px solid rgba(79,156,249,.3)';
+  await loadAll();
+  ouvrirDashboard();
+}
+async function loadWorkspacesFromServer(){
+  try{
+    const res=await authFetch('/api/workspaces');
+    if(!res||!res.ok)return;
+    const list=await res.json();
+    workspaces={};
+    list.forEach(ws=>{workspaces[ws.id]=ws;});
+  }catch(e){console.error('loadWorkspaces error:',e);}
+}
+async function retourWorkspaces(){
+  await saveAll();
+  // Restaurer le token superadmin
+  authToken=localStorage.getItem('nectaToken')||'';
+  activeWorkspaceId=null;machines={};
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('btnClients').style.display='none';
+  await loadWorkspacesFromServer();
+  document.getElementById('wsView').style.display='block';
+}
+
+// ══ PORTAIL ══
+function chgIng(k,d){pIng[k]=Math.max(1,pIng[k]+d);document.getElementById('v_'+k).textContent=pIng[k];}
+function chgBac(d){pBac=Math.min(50,Math.max(5,pBac+d));document.getElementById('bacVal').textContent=pBac;}
+function chgThresh(t,d){
+  if(t==='crit'){threshCrit=Math.min(40,Math.max(5,threshCrit+d));document.getElementById('v_thresh_crit').textContent=threshCrit;}
+  else{threshWarn=Math.min(60,Math.max(20,threshWarn+d));document.getElementById('v_thresh_warn').textContent=threshWarn;}
+  saveAll();
+}
+function pValidate(s){
+  let ok=true;
+  if(s===1){
+    const n=document.getElementById('pName').value.trim(),i=document.getElementById('pId').value.trim();
+    document.getElementById('eN').classList.toggle('show',!n);document.getElementById('pName').classList.toggle('err',!n);
+    document.getElementById('eI').classList.toggle('show',!i);document.getElementById('pId').classList.toggle('err',!i);
+    if(!n||!i)ok=false;
+  }
+  if(s===2){const ss=document.getElementById('pSsid').value.trim();document.getElementById('eS').classList.toggle('show',!ss);document.getElementById('pSsid').classList.toggle('err',!ss);if(!ss)ok=false;}
+  return ok;
+}
+function pGoNext(){
+  if(!pValidate(pStep))return;
+  if(pStep<4){
+    document.getElementById('fsec'+pStep).classList.remove('active');
+    document.getElementById('stp'+pStep).classList.remove('active');
+    document.getElementById('stp'+pStep).classList.add('done');
+    pStep++;
+    document.getElementById('fsec'+pStep).classList.add('active');
+    document.getElementById('stp'+pStep).classList.add('active');
+    document.getElementById('pBack').style.display='';
+    if(pStep===4){document.getElementById('pNext').textContent='✓ Enregistrer';document.getElementById('pNext').classList.add('green');}
+  } else {
+    const adresse=document.getElementById('pAdresse').value.trim();
+    const m={
+      id:document.getElementById('pId').value.trim(),
+      name:document.getElementById('pName').value.trim(),
+      lieu:document.getElementById('pLieu').value.trim()||'—',
+      adresse:adresse,
+      wifi:document.getElementById('pSsid').value.trim(),
+      bac:pBac,
+      ing_cafe_init:pIng.cafe,dose_cafe:pIng.dose_cafe,
+      ing_sucre_init:pIng.sucre,dose_sucre:pIng.dose_sucre,
+      ing_lait_init:pIng.lait,dose_lait:pIng.dose_lait,
+      ing_choco_init:pIng.choco,dose_choco:pIng.dose_choco,
+      gobelets_init:pIng.gobelets,
+      boissons:Object.fromEntries(KEYS.map(k=>[k,0])),
+      history:genHistory(),
+      fillTime:Date.now(),
+      ts:Date.now()-Math.random()*60000,
+      lat:DEFAULT_COORDS[0]+(Math.random()-.5)*.05,
+      lng:DEFAULT_COORDS[1]+(Math.random()-.5)*.05,
+    };
+    machines[m.id]=m;
+    saveAll();
+    logIntervention(m.id,m.name,'create',{});
+    document.getElementById('pSum').innerHTML=[
+      ['Machine',m.name],['ID',m.id],['Lieu',m.lieu],
+      ['WiFi',m.wifi],['Bac d\'eau',m.bac+'L'],
+      ['Café',m.ing_cafe_init+'g'],['Sucre',m.ing_sucre_init+'g'],
+      ['Lait',m.ing_lait_init+'g'],['Chocolat',m.ing_choco_init+'g'],
+      ['Gobelets',m.gobelets_init+' pcs'],
+    ].map(([k,v])=>`<div class="sum-row"><span class="sum-k">${k}</span><span class="sum-v">${v}</span></div>`).join('');
+    for(let i=1;i<=4;i++)document.getElementById('fsec'+i).classList.remove('active');
+    document.getElementById('pNav').style.display='none';
+    document.querySelectorAll('.stp').forEach(s=>{s.classList.remove('active');s.classList.add('done');});
+    document.getElementById('fsecOk').classList.add('active');
+  }
+}
+function pGoBack(){
+  if(pStep<=1)return;
+  document.getElementById('fsec'+pStep).classList.remove('active');
+  document.getElementById('stp'+pStep).classList.remove('active');
+  pStep--;
+  document.getElementById('fsec'+pStep).classList.add('active');
+  document.getElementById('stp'+pStep).classList.add('active');
+  document.getElementById('stp'+(pStep+1)).classList.remove('done');
+  if(pStep===1)document.getElementById('pBack').style.display='none';
+  document.getElementById('pNext').textContent='Suivant →';
+  document.getElementById('pNext').classList.remove('green');
+}
+function resetPortal(){
+  pStep=1;pBac=20;
+  Object.assign(pIng,{cafe:1000,dose_cafe:7,sucre:1000,dose_sucre:4,lait:500,dose_lait:8,choco:500,dose_choco:12,gobelets:200});
+  ['cafe','dose_cafe','sucre','dose_sucre','lait','dose_lait','choco','dose_choco','gobelets'].forEach(k=>document.getElementById('v_'+k).textContent=pIng[k]);
+  document.getElementById('bacVal').textContent=20;
+  for(let i=1;i<=4;i++){document.getElementById('fsec'+i).classList.remove('active');document.getElementById('stp'+i).classList.remove('active','done');}
+  document.getElementById('fsec1').classList.add('active');document.getElementById('stp1').classList.add('active');
+  document.getElementById('fsecOk').classList.remove('active');
+  document.getElementById('pNav').style.display='';document.getElementById('pBack').style.display='none';
+  document.getElementById('pNext').textContent='Suivant →';document.getElementById('pNext').classList.remove('green');
+  ['pName','pId','pLieu','pSsid','pPass','pAdresse'].forEach(id=>document.getElementById(id).value='');
+}
+function ouvrirDashboard(){document.getElementById('portal').style.display='none';document.getElementById('dashboard').style.display='block';renderAll();}
+function retourConfig(){resetPortal();document.getElementById('portal').style.display='flex';document.getElementById('dashboard').style.display='none';if(Object.keys(machines).length>0)document.getElementById('pBackDash').style.display='block';}
+function ajouterAutre(){resetPortal();}
+
+// ══ CALCULS ══
+function calcIng(m){
+  const b=m.boissons||{};
+  const totalV=Object.values(b).reduce((s,v)=>s+v,0);
+  const cafeG=KEYS.reduce((s,k)=>s+(b[k]||0)*(CAFE_G[k]||0),0);
+  const cafeRest=Math.max(0,m.ing_cafe_init-cafeG);
+  const cafePct=Math.round(cafeRest/m.ing_cafe_init*100);
+  const sucreG=KEYS.reduce((s,k)=>s+(SUCRE_DRINKS.includes(k)?(b[k]||0)*m.dose_sucre*0.7:0),0);
+  const sucreRest=Math.max(0,m.ing_sucre_init-sucreG);
+  const sucrePct=Math.round(sucreRest/m.ing_sucre_init*100);
+  const laitG=KEYS.reduce((s,k)=>s+(b[k]||0)*(LAIT_G[k]||0),0);
+  const laitRest=Math.max(0,m.ing_lait_init-laitG);
+  const laitPct=Math.round(laitRest/m.ing_lait_init*100);
+  const chocoG=(b.chocolat||0)*m.dose_choco;
+  const chocoRest=Math.max(0,m.ing_choco_init-chocoG);
+  const chocoPct=Math.round(chocoRest/m.ing_choco_init*100);
+  const eauC=KEYS.reduce((s,k)=>s+(b[k]||0)*(WATER_ML[k]||150),0);
+  const eauRest=Math.max(0,m.bac-(eauC-(m.waterOffset||0))/1000);
+  const eauPct=Math.round(eauRest/m.bac*100);
+  const gobRest=Math.max(0,m.gobelets_init-totalV);
+  const gobPct=Math.round(gobRest/m.gobelets_init*100);
+  return {cafeRest,cafePct,cafeG,sucreRest,sucrePct,sucreG,laitRest,laitPct,laitG,chocoRest,chocoPct,chocoG,eauRest,eauPct,eauC,gobRest,gobPct,totalV};
+}
+function calcCA(m){
+  const b=m.boissons||{};
+  return KEYS.reduce((s,k)=>s+(b[k]||0)*(prices[k]||0),0);
+}
+function prediction(m,ingPct,ingRest,ingInit){
+  const elapsed=(Date.now()-(m.fillTime||Date.now()))/3600000;
+  if(elapsed<0.5)return null;
+  const ratePerH=(ingInit-ingRest)/elapsed;
+  if(ratePerH<0.1)return null;
+  const hoursLeft=ingRest/ratePerH;
+  if(hoursLeft>48)return null;
+  if(hoursLeft<1)return `⚡ Vide dans <1h`;
+  return `⏱ Vide dans ~${Math.round(hoursLeft)}h`;
+}
+function bc(v){return v>threshWarn?'var(--green)':v>threshCrit?'var(--amber)':'var(--red)';}
+function wc(v){return v>30?'#4f9cf9':v>15?'var(--amber)':'var(--red)';}
+function ago(ts){const s=Math.floor((Date.now()-ts)/1000);return s<60?s+'s':s<3600?Math.floor(s/60)+'min':Math.floor(s/3600)+'h';}
+function st(m){
+  if(Date.now()-m.ts>300000)return'off';
+  const c=calcIng(m);
+  const mn=Math.min(c.cafePct,c.sucrePct,c.laitPct,c.gobPct,c.eauPct,c.chocoPct);
+  if(mn<threshCrit)return'crit';if(mn<threshWarn)return'warn';return'ok';
+}
+function badgeHtml(s){
+  return s==='ok'?'<span class="badge b-ok">OK</span>':s==='warn'?'<span class="badge b-warn">À REMPLIR</span>':s==='crit'?'<span class="badge b-crit">URGENT</span>':'<span class="badge b-off">HORS LIGNE</span>';
+}
+
+// ══ RENDER ALL ══
+function renderAll(){renderMachines();updateStats();renderRefillLog();}
+
+// ══ MACHINES ══
+function renderMachines(){
+  const g=document.getElementById('machinesGrid');
+  const mList=Object.values(machines);
+  if(!mList.length){g.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">☕</div><div class="empty-title">Aucune machine configurée</div><div class="empty-desc">Cliquez sur "+ Machine" pour commencer.</div></div>`;updateStats();return;}
+  g.innerHTML='';
+  let ok=0,wn=0,cr=0,tot=0,totalW=0,totalCA=0;const fill=[];
+  mList.sort((a,b)=>{const o={crit:0,warn:1,ok:2,off:3};return o[st(a)]-o[st(b)];}).forEach(m=>{
+    const s=st(m);const c=calcIng(m);const ca=calcCA(m);
+    if(s==='ok')ok++;else if(s==='warn'){wn++;fill.push(m);}else if(s==='crit'){cr++;fill.push(m);}
+    tot+=c.totalV;totalW+=c.eauRest;totalCA+=ca;
+    const wGrad=c.eauPct>30?'linear-gradient(90deg,#4f9cf9,#60c3f9)':c.eauPct>15?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#ef4444,#f87171)';
+    const pred=prediction(m,c.cafePct,c.cafeRest,m.ing_cafe_init);
+    const d=document.createElement('div');
+    d.className='card '+(s==='warn'?'warn':s==='crit'?'crit':'');
+    d.onclick=()=>{selMachine=m.id;switchTab('ingredients',document.querySelectorAll('.tab')[1]);};
+    d.innerHTML=`<div class="card-head"><div><div class="card-id">${m.id}${m.lieu&&m.lieu!=='—'?' · '+m.lieu:''}</div><div class="card-name">${m.name}</div></div><div style="display:flex;align-items:center;gap:4px">${badgeHtml(s)}<button class="edit-btn" onclick="event.stopPropagation();openEditMachine('${m.id}')">✏</button><button class="qr-btn" onclick="event.stopPropagation();openQR('${m.id}')">QR</button><button id="del_${m.id}" class="del-btn" onclick="event.stopPropagation();deleteMachine('${m.id}')">✕</button></div></div>
+    <div class="card-body">
+      ${[['☕ Café',c.cafePct],['🍬 Sucre',c.sucrePct],['🥛 Lait',c.laitPct],['🍫 Choco',c.chocoPct],['🥤 Gobelets',c.gobPct]].map(([n,v])=>`<div class="lv-name">${n}</div><div class="lv-row"><div class="bar-bg"><div class="bar-fill" style="width:${v}%;background:${bc(v)}"></div></div><div class="pct">${v}%</div></div>`).join('')}
+      <hr class="divider-dash">
+      <div class="lv-name" style="color:${wc(c.eauPct)}">💧 Eau (${m.bac}L)</div>
+      <div class="lv-row"><div class="bar-bg" style="height:5px"><div class="bar-fill" style="width:${c.eauPct}%;height:5px;background:${wGrad}"></div></div><div class="pct">${c.eauPct}%</div></div>
+      ${pred?`<div class="prediction">${pred}</div>`:''}
+    </div>
+    <div class="card-ca"><span style="color:var(--muted)">CA aujourd'hui</span><span class="ca-val">${ca.toFixed(2)} €</span></div>
+    <div class="card-foot"><span>Vu il y a ${ago(m.ts)}</span><div><span>${c.totalV}</span> boissons/j</div></div>`;
+    g.appendChild(d);
+  });
+  document.getElementById('s1').textContent=ok;document.getElementById('s2').textContent=wn;
+  document.getElementById('s3').textContent=cr;document.getElementById('s4').textContent=tot;
+  document.getElementById('s5').textContent=totalCA.toFixed(2)+' €';
+  document.getElementById('s6').textContent=mList.length>0?(totalW/mList.length).toFixed(1)+' L':'— L';
+  const tp=document.getElementById('tourneesPanel');
+  tp.innerHTML=fill.length?fill.map((m,i)=>{
+    const c=calcIng(m);const low=[];
+    if(c.cafePct<threshWarn)low.push('café '+c.cafePct+'%');
+    if(c.sucrePct<threshWarn)low.push('sucre '+c.sucrePct+'%');
+    if(c.eauPct<30)low.push('eau '+c.eauPct+'%');
+    if(c.gobPct<threshWarn)low.push('gobelets '+c.gobPct+'%');
+    return `<div style="padding:6px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono)"><span>#${i+1} ${m.name}</span><span style="color:${st(m)==='crit'?'var(--red)':'var(--amber)'}">${st(m)==='crit'?'URGENT':'BIENTÔT'}</span></div><div style="color:var(--muted);font-size:10px;font-family:var(--mono);margin-top:2px">${low.join(' · ')}</div></div>`;
+  }).join(''):'<div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune tournée urgente</div>';
+  renderMachineList();updateCA();sendTelegramAlerts(cr,fill);
+}
+
+// ══ INGRÉDIENTS ══
+function renderIngredients(){
+  const g=document.getElementById('ingGrid');
+  const mList=Object.values(machines);
+  if(!mList.length){g.innerHTML='<div style="color:var(--muted);font-family:var(--mono);font-size:12px">Aucune machine configurée.</div>';return;}
+  g.innerHTML='';
+  mList.forEach(m=>{
+    const c=calcIng(m);
+    const minP=Math.min(c.cafePct,c.sucrePct,c.laitPct,c.chocoPct,c.eauPct,c.gobPct);
+    const d=document.createElement('div');
+    d.className='ing-card'+(minP<threshCrit?' critical':minP<threshWarn?' low':'');
+    const rows=[
+      {icon:'☕',name:'Café',pct:c.cafePct,rest:c.cafeRest,init:m.ing_cafe_init,unit:'g',consumed:c.cafeG.toFixed(0)+'g'},
+      {icon:'🍬',name:'Sucre',pct:c.sucrePct,rest:c.sucreRest,init:m.ing_sucre_init,unit:'g',consumed:c.sucreG.toFixed(0)+'g'},
+      {icon:'🥛',name:'Lait',pct:c.laitPct,rest:c.laitRest,init:m.ing_lait_init,unit:'g',consumed:c.laitG.toFixed(0)+'g'},
+      {icon:'🍫',name:'Chocolat',pct:c.chocoPct,rest:c.chocoRest,init:m.ing_choco_init,unit:'g',consumed:c.chocoG.toFixed(0)+'g'},
+      {icon:'🥤',name:'Gobelets',pct:c.gobPct,rest:c.gobRest,init:m.gobelets_init,unit:'pcs',consumed:(m.gobelets_init-c.gobRest)+' utilisés'},
+      {icon:'💧',name:'Eau (bac '+m.bac+'L)',pct:c.eauPct,rest:c.eauRest.toFixed(1),init:m.bac,unit:'L',consumed:(c.eauC/1000).toFixed(2)+'L',water:true},
+    ].map(r=>{
+      const col=r.water?wc(r.pct):bc(r.pct);
+      const grad=r.water?(r.pct>30?'linear-gradient(90deg,#4f9cf9,#60c3f9)':r.pct>15?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#ef4444,#f87171)'):col;
+      const pred=r.icon==='☕'?prediction(m,r.pct,r.rest,r.init):null;
+      return `<div class="ing-row">
+        <div class="ing-row-head">
+          <div class="ing-name" style="color:${col}">${r.icon} ${r.name}</div>
+          <div class="ing-val" style="color:${col}">${r.pct}% · <strong>${r.rest}${r.unit}</strong></div>
+        </div>
+        <div class="ing-bar-bg"><div class="ing-bar-fill" style="width:${r.pct}%;background:${grad}"></div></div>
+        <div class="ing-detail"><span>${r.consumed} consommés</span><span>/ ${r.init}${r.unit}</span></div>
+        ${pred?`<div class="ing-pred">${pred}</div>`:''}
+      </div>`;
+    }).join('');
+    d.innerHTML=`<div class="ing-title">${m.name}</div><div class="ing-id">${m.id}${m.lieu&&m.lieu!=='—'?' · '+m.lieu:''}</div>${rows}
+    <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+      <button class="refill-btn" onclick="refillAll('${m.id}')">✓ Remplir tout</button>
+      <button class="refill-btn" style="border-color:#4f9cf9;color:#4f9cf9" onclick="refillEau('${m.id}')">💧 Remplir eau</button>
+    </div>`;
+    g.appendChild(d);
+  });
+}
+function deleteMachine(id){
+  const btn=document.getElementById('del_'+id);
+  if(deleteConfirm[id]){
+    clearTimeout(deleteConfirm[id]);
+    delete deleteConfirm[id];
+    const name=machines[id]?machines[id].name:id;
+    delete machines[id];
+    if(selMachine===id)selMachine=null;
+    toast('🗑 '+name+' supprimée','warn');
+    log('suppression : '+id,'er');
+    addAlert(name+' supprimée','warn');
+    saveAll();
+    renderMachines();
+    renderMachineList();
+  } else {
+    if(btn){btn.textContent='Suppr. ?';btn.classList.add('confirm');}
+    deleteConfirm[id]=setTimeout(()=>{
+      delete deleteConfirm[id];
+      const b=document.getElementById('del_'+id);
+      if(b){b.textContent='✕';b.classList.remove('confirm');}
+    },3000);
+  }
+}
+function logRefill(machineId,type){
+  const m=machines[machineId];
+  const who=currentRole==='superadmin'?'Super Admin':currentRole==='admin'?'Admin':'Technicien';
+  refillLog.unshift({machineId,machineName:m?m.name:machineId,type,who,ts:Date.now()});
+  if(refillLog.length>100)refillLog.pop();
+  renderRefillLog();
+}
+function renderRefillLog(){
+  const el=document.getElementById('refillLogList');
+  if(!el)return;
+  if(!refillLog.length){el.innerHTML='<div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucun remplissage enregistré</div>';return;}
+  el.innerHTML=refillLog.slice(0,30).map(r=>`<div class="refill-log-item">
+    <span class="refill-log-who">${r.who}</span> — <b>${r.machineName}</b> — ${r.type==='all'?'✓ Tout rempli':'💧 Eau remplie'}<br>
+    <span class="refill-log-when">${new Date(r.ts).toLocaleString('fr-FR')}</span>
+  </div>`).join('');
+}
+function refillAll(id){
+  const m=machines[id];
+  m.boissons=Object.fromEntries(KEYS.map(k=>[k,0]));
+  m.fillTime=Date.now();m.waterOffset=0;
+  logRefill(id,'all');
+  logIntervention(id,m.name,'refill_all',{by:currentRole});
+  addAlert(m.name+' : tous les ingrédients remplis','info');
+  toast('✓ '+m.name+' — tout rempli','success');
+  log('remplissage : '+id,'in');
+  sendBrowserNotif('Remplissage effectué',''+m.name+' — tous les ingrédients remplis');
+  saveAll();
+  renderMachines();renderIngredients();
+}
+function refillEau(id){
+  const m=machines[id];
+  const b=m.boissons||{};
+  m.waterOffset=KEYS.reduce((s,k)=>s+(b[k]||0)*(WATER_ML[k]||150),0);
+  logRefill(id,'eau');
+  logIntervention(id,m.name,'refill_eau',{by:currentRole});
+  addAlert(m.name+' : bac d\'eau rempli','info');
+  toast('💧 '+m.name+' — eau remplie','info');
+  log('eau remplie : '+id,'in');
+  saveAll();
+  renderMachines();renderIngredients();
+}
+
+// ══ EDIT MACHINE ══
+function openEditMachine(id){
+  const m=machines[id];if(!m)return;
+  document.getElementById('editMachineId').value=id;
+  document.getElementById('editMachineName').value=m.name||'';
+  document.getElementById('editMachineLieu').value=m.lieu||'';
+  document.getElementById('editMachineAdresse').value=m.adresse||'';
+  document.getElementById('editMachineBac').value=m.bac||20;
+  document.getElementById('editMachineDoseCafe').value=m.dose_cafe||7;
+  document.getElementById('editMachineModal').classList.add('open');
+}
+function saveEditMachine(){
+  const id=document.getElementById('editMachineId').value;
+  const m=machines[id];if(!m)return;
+  const name=document.getElementById('editMachineName').value.trim();
+  if(!name){toast('Le nom est requis','warn');return;}
+  m.name=name;
+  m.lieu=document.getElementById('editMachineLieu').value.trim()||'—';
+  m.adresse=document.getElementById('editMachineAdresse').value.trim();
+  const bac=parseInt(document.getElementById('editMachineBac').value)||20;
+  m.bac=Math.min(50,Math.max(5,bac));
+  const dose=parseInt(document.getElementById('editMachineDoseCafe').value)||7;
+  m.dose_cafe=Math.min(20,Math.max(1,dose));
+  saveAll();
+  document.getElementById('editMachineModal').classList.remove('open');
+  toast('Machine mise à jour','success');
+  renderMachines();
+  if(document.getElementById('v-ingredients').classList.contains('active'))renderIngredients();
+}
+
+// ══ QR CODE ══
+function openQR(id){
+  const m=machines[id];if(!m)return;
+  const gpsUrl=m.adresse?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.adresse)}`:`https://www.google.com/maps/search/?api=1&query=${m.lat},${m.lng}`;
+  document.getElementById('qrMachineName').textContent=m.name+' — '+m.id;
+  document.getElementById('qrUrlDisplay').textContent=gpsUrl;
+  const container=document.getElementById('qrCodeContainer');
+  container.innerHTML='';
+  try{new QRCode(container,{text:gpsUrl,width:200,height:200,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}
+  catch(e){container.innerHTML='<div style="color:red;font-family:monospace;font-size:11px">Erreur QR : '+e.message+'</div>';}
+  document.getElementById('qrModal').classList.add('open');
+}
+
+// ══ EXPORT CSV ══
+function exportCSV(){
+  const mList=Object.values(machines);
+  if(!mList.length){toast('Aucune machine à exporter','warn');return;}
+  const headers=['ID','Nom','Lieu','Adresse','Statut','Café%','Sucre%','Lait%','Choco%','Eau%','Gobelets%','CA(€)','Boissons'];
+  const rows=mList.map(m=>{
+    const c=calcIng(m);const s=st(m);const ca=calcCA(m);
+    return [m.id,m.name,m.lieu,m.adresse,s,c.cafePct,c.sucrePct,c.laitPct,c.chocoPct,c.eauPct,c.gobPct,ca.toFixed(2),c.totalV];
+  });
+  const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='necta-machines-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('CSV exporté','success');
+}
+
+// ══ EXPORT PDF ══
+function exportPDF(){
+  if(!Object.keys(machines).length){toast('Aucune machine à exporter','warn');return;}
+  window.print();
+}
+
+// ══ STATISTIQUES ══
+function setPeriod(p,btn){
+  period=p;document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderStats();
+}
+function renderStats(){
+  const mList=Object.values(machines);
+  const chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a5272',font:{family:'DM Mono',size:10}}},y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#4a5272',font:{family:'DM Mono',size:10}}}}};
+  // Chart heures
+  const hours=Array.from({length:24},(_,i)=>i+'h');
+  let hourData=Array(24).fill(0);
+  mList.forEach(m=>{if(m.history&&m.history[0])m.history[0].forEach((v,i)=>hourData[i]+=v);});
+  if(chartHour)chartHour.destroy();
+  chartHour=new Chart(document.getElementById('chartHour'),{type:'bar',data:{labels:hours,datasets:[{data:hourData,backgroundColor:hourData.map(v=>v>10?'rgba(79,156,249,.7)':'rgba(79,156,249,.35)'),borderRadius:4}]},options:{...chartOpts,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw} boissons`}}}}});
+  // Chart machines
+  const mNames=mList.map(m=>m.name.split(' ')[0]);
+  const mVentes=mList.map(m=>Object.values(m.boissons||{}).reduce((a,b)=>a+b,0));
+  if(chartMachines)chartMachines.destroy();
+  chartMachines=new Chart(document.getElementById('chartMachines'),{type:'doughnut',data:{labels:mNames,datasets:[{data:mVentes,backgroundColor:PAL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#4a5272',font:{family:'DM Mono',size:10},boxWidth:8,padding:8}}}}});
+  // Chart tendance
+  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  let trendData=Array(7).fill(0);
+  mList.forEach(m=>{if(m.history){for(let d=0;d<7;d++)trendData[d]+=m.history[d]?m.history[d].reduce((a,b)=>a+b,0):0;}});
+  if(chartTrend)chartTrend.destroy();
+  chartTrend=new Chart(document.getElementById('chartTrend'),{type:'line',data:{labels:days,datasets:[{data:trendData,borderColor:'#3ecf8e',backgroundColor:'rgba(62,207,142,.1)',tension:.4,fill:true,pointBackgroundColor:'#3ecf8e',pointRadius:4}]},options:{...chartOpts}});
+}
+
+// ══ CARTE ══
+function renderMap(){
+  if(!leafletMap){
+    leafletMap=L.map('mapContainer',{zoomControl:true}).setView(DEFAULT_COORDS,12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(leafletMap);
+    leafletMap.getContainer().style.filter='brightness(0.85) saturate(0.7)';
+  }
+  // Nettoyer anciens marqueurs
+  Object.values(mapMarkers).forEach(m=>m.remove());
+  mapMarkers={};
+  const mList=Object.values(machines);
+  if(!mList.length)return;
+  const bounds=[];
+  mList.forEach(m=>{
+    const s=st(m);
+    const c=calcIng(m);
+    const color=s==='ok'?'#3ecf8e':s==='warn'?'#f59e0b':s==='crit'?'#ef4444':'#4a5272';
+    const icon=L.divIcon({className:'',html:`<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`,iconSize:[16,16],iconAnchor:[8,8]});
+    const marker=L.marker([m.lat||DEFAULT_COORDS[0],m.lng||DEFAULT_COORDS[1]],{icon}).addTo(leafletMap);
+    marker.bindPopup(`<div style="font-family:'DM Mono',monospace;font-size:12px;min-width:160px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">${m.name}</div><div style="color:#666;margin-bottom:8px">${m.id}</div><div>☕ Café : <b>${c.cafePct}%</b></div><div>💧 Eau : <b>${c.eauPct}%</b></div><div>🥤 Gobelets : <b>${c.gobPct}%</b></div><div style="margin-top:8px;color:${color};font-weight:700">${s.toUpperCase()}</div></div>`);
+    mapMarkers[m.id]=marker;
+    bounds.push([m.lat||DEFAULT_COORDS[0],m.lng||DEFAULT_COORDS[1]]);
+  });
+  if(bounds.length)leafletMap.fitBounds(bounds,{padding:[40,40]});
+  setTimeout(()=>leafletMap.invalidateSize(),200);
+}
+
+// ══ CA ══
+function savePrices(){
+  KEYS.forEach(k=>{const el=document.getElementById('price_'+k);if(el)prices[k]=parseFloat(el.value)||0;});
+  saveAll();updateCA();addAlert('Prix mis à jour','info');toast('Prix enregistrés','success');
+}
+function updateCA(){
+  const mList=Object.values(machines);
+  let total=0;const caByM=[];
+  mList.forEach(m=>{const ca=calcCA(m);total+=ca;caByM.push({name:m.name,ca});});
+  caByM.sort((a,b)=>b.ca-a.ca);
+  document.getElementById('caTotalBig').textContent=total.toFixed(2)+' €';
+  document.getElementById('s5').textContent=total.toFixed(2)+' €';
+  const mois=total*30;document.getElementById('caMoisBig').textContent=mois.toFixed(2)+' €';
+  document.getElementById('caMoyBig').textContent=mList.length>0?(total/mList.length).toFixed(2)+' €':'0,00 €';
+  const maxCA=caByM.length?caByM[0].ca:1;
+  document.getElementById('caRanking').innerHTML=caByM.map((m,i)=>`
+    <div class="ca-rank-row">
+      <div><span style="color:var(--muted);margin-right:6px">#${i+1}</span>${m.name}</div>
+      <div style="color:var(--green)">${m.ca.toFixed(2)} €</div>
+    </div>
+    <div class="ca-rank-bar"><div class="ca-rank-fill" style="width:${Math.round(m.ca/maxCA*100)}%"></div></div>`).join('');
+}
+function renderPrices(){
+  document.getElementById('priceRows').innerHTML=KEYS.filter(k=>k!=='sel_15'&&k!=='sel_16').map(k=>`
+    <div class="price-row">
+      <span>${ICONS[k]} ${LABELS[k]}</span>
+      <div style="display:flex;align-items:center;gap:5px">
+        <input type="number" class="price-input" id="price_${k}" value="${(prices[k]||0).toFixed(2)}" step="0.10" min="0" onchange="savePrices()">
+        <span style="font-size:11px;color:var(--muted)">€</span>
+      </div>
+    </div>`).join('');
+}
+
+// ══ BOISSONS ══
+function renderMachineList(){
+  const list=document.getElementById('machineList');list.innerHTML='';
+  const all=document.createElement('div');
+  all.className='mitem'+(selMachine?'':' active');
+  all.innerHTML='<div>Toutes les machines</div><div class="msub">vue globale</div>';
+  all.onclick=()=>{selMachine=null;renderMachineList();renderDrinks();};list.appendChild(all);
+  Object.values(machines).forEach(m=>{
+    const d=document.createElement('div');d.className='mitem'+(selMachine===m.id?' active':'');
+    d.innerHTML=`<div>${m.name}</div><div class="msub">${m.id}</div>`;
+    d.onclick=()=>{selMachine=m.id;renderMachineList();renderDrinks();};list.appendChild(d);
+  });
+}
+function renderDrinks(){
+  const totals={};KEYS.forEach(k=>totals[k]=0);
+  const mList=selMachine?[machines[selMachine]]:Object.values(machines);
+  mList.forEach(m=>{if(!m||!m.boissons)return;KEYS.forEach(k=>totals[k]+=(m.boissons[k]||0));});
+  const m=selMachine?machines[selMachine]:null;
+  document.getElementById('dTitle').textContent=m?m.name:'Toutes les machines';
+  document.getElementById('dSub').textContent=m?(m.id+(m.lieu&&m.lieu!=='—'?' · '+m.lieu:'')):'Cumul — aujourd\'hui';
+  const max=Math.max(...Object.values(totals),1);
+  document.getElementById('drinksGrid').innerHTML=KEYS.map(k=>{
+    const ca=(totals[k]*(prices[k]||0)).toFixed(2);
+    return `<div class="drink-card"><div class="d-icon">${ICONS[k]}</div><div class="d-name">${LABELS[k]}</div><div class="d-count">${totals[k]}</div><div class="d-ca">${ca} €</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:${Math.round(totals[k]/max*100)}%"></div></div></div>`;
+  }).join('');
+  const active=KEYS.filter(k=>totals[k]>0);
+  if(dChart)dChart.destroy();if(!active.length)return;
+  dChart=new Chart(document.getElementById('dChart'),{type:'doughnut',data:{labels:active.map(k=>LABELS[k]),datasets:[{data:active.map(k=>totals[k]),backgroundColor:PAL,borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#4a5272',font:{family:'DM Mono',size:10},boxWidth:8,padding:8}},tooltip:{callbacks:{label:ctx=>` ${ctx.label} : ${ctx.raw} · ${(ctx.raw*(prices[active[ctx.dataIndex]]||0)).toFixed(2)}€`}}}}});
+}
+
+// ══ TECHNICIEN ══
+function toggleTech(){
+  if(currentRole==='tech'&&techOpen){doLogout();return;}
+  techOpen=!techOpen;
+  document.getElementById('techView').style.display=techOpen?'block':'none';
+  document.getElementById('btnTech').classList.toggle('active',techOpen);
+  if(techOpen)renderTech();
+}
+function renderTech(){
+  const mList=Object.values(machines).sort((a,b)=>{const o={crit:0,warn:1,ok:2,off:3};return o[st(a)]-o[st(b)];});
+  const counts={crit:0,warn:0,ok:0,off:0};
+  mList.forEach(m=>counts[st(m)]++);
+  document.getElementById('ts-total').textContent=mList.length;
+  document.getElementById('ts-crit').textContent=counts.crit;
+  document.getElementById('ts-warn').textContent=counts.warn;
+  document.getElementById('ts-ok').textContent=counts.ok;
+  document.getElementById('techCards').innerHTML=mList.map((m,i)=>{
+    const s=st(m);const c=calcIng(m);
+    const sc=s==='crit'?'#ef4444':s==='warn'?'#f59e0b':s==='ok'?'#3ecf8e':'#4a5272';
+    const numBg=s==='crit'?'rgba(239,68,68,.12)':s==='warn'?'rgba(245,158,11,.1)':s==='ok'?'rgba(62,207,142,.1)':'rgba(74,82,114,.1)';
+    const numBd=s==='crit'?'rgba(239,68,68,.3)':s==='warn'?'rgba(245,158,11,.25)':s==='ok'?'rgba(62,207,142,.25)':'rgba(74,82,114,.2)';
+    const badgeCls=s==='crit'?'b-crit':s==='warn'?'b-warn':s==='ok'?'b-ok':'b-off';
+    const badgeTxt=s==='crit'?'🔴 URGENT':s==='warn'?'⚠ À REMPLIR':s==='ok'?'✓ OK':'○ HORS LIGNE';
+    const rings=[
+      {icon:'☕',label:'Café',pct:c.cafePct,water:false},
+      {icon:'🍬',label:'Sucre',pct:c.sucrePct,water:false},
+      {icon:'🥛',label:'Lait',pct:c.laitPct,water:false},
+      {icon:'💧',label:'Eau',pct:c.eauPct,water:true},
+      {icon:'🥤',label:'Gobelets',pct:c.gobPct,water:false},
+      {icon:'🍫',label:'Choco',pct:c.chocoPct,water:false},
+    ];
+    const urgentItems=rings.filter(r=>r.pct<threshWarn).map(r=>`${r.icon} ${r.pct}%`).join(' · ');
+    const gpsUrl=m.adresse?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.adresse)}`:`https://www.google.com/maps/search/?api=1&query=${m.lat},${m.lng}`;
+    return `<div class="tc ${s}" style="animation-delay:${i*0.07}s">
+      <div class="tc-strip" style="background:${sc}"></div>
+      <div class="tc-content">
+        <div class="tc-head">
+          <div class="tc-num" style="color:${sc};border-color:${numBd};background:${numBg}">#${i+1}</div>
+          <div class="tc-meta">
+            <div class="tc-name">${m.name}</div>
+            <div class="tc-loc">📍 ${m.lieu&&m.lieu!=='—'?m.lieu:'—'} · ${m.id}</div>
+          </div>
+          <div class="tc-status">
+            <span class="tc-badge ${badgeCls}">${badgeTxt}</span>
+            <span class="tc-ago">vu ${ago(m.ts)}</span>
+          </div>
+        </div>
+        <div class="tc-rings">
+          ${rings.map(r=>{
+            const col=r.water?wc(r.pct):bc(r.pct);
+            return `<div class="tc-ring-item">
+              <div class="tc-ring-wrap">
+                <svg class="tc-svg" viewBox="0 0 36 36">
+                  <circle class="tc-arc-bg" cx="18" cy="18" r="15.9"/>
+                  <circle class="tc-arc-fill" cx="18" cy="18" r="15.9" stroke="${col}"
+                    stroke-dasharray="0 100" transform="rotate(-90 18 18)" data-pct="${r.pct}"/>
+                </svg>
+                <div class="tc-ring-pct" style="color:${col}">${r.pct}</div>
+              </div>
+              <div class="tc-ring-label">${r.icon} ${r.label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="tc-foot">
+          <div class="tc-issues">${urgentItems?`<span class="tc-urg">⚠ ${urgentItems}</span>`:`<span class="tc-allok">✓ Tous les niveaux OK</span>`}</div>
+          <div class="tc-actions">
+            <a class="tc-gps" href="${gpsUrl}" target="_blank">📍 Itinéraire GPS</a>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>{
+    document.querySelectorAll('.tc-arc-fill').forEach(el=>{
+      el.style.strokeDasharray=`${el.dataset.pct||0} 100`;
+    });
+  },80);
+}
+
+// ══ TELEGRAM ══
+function saveTelegram(){tgToken=document.getElementById('tgToken').value.trim();tgChatId=document.getElementById('tgChatId').value.trim();if(tgToken&&tgChatId){document.getElementById('tgStatus').innerHTML='<div class="tg-dot" style="background:var(--green)"></div><span style="color:var(--green)">Configuré</span>';addAlert('Telegram configuré','info');toast('Telegram enregistré','success');}else{document.getElementById('tgStatus').innerHTML='<div class="tg-dot" style="background:var(--muted)"></div><span style="color:var(--muted)">Non configuré</span>';toast('Token ou Chat ID manquant','warn');}}
+async function testTelegram(){
+  const tok=document.getElementById('tgToken').value.trim();const cid=document.getElementById('tgChatId').value.trim();
+  if(!tok||!cid){toast('Entrez le token et le Chat ID','warn');return;}
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${tok}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cid,text:'✅ NECTA Monitor — Test de connexion réussi !'})});
+    const d=await r.json();
+    if(d.ok)toast('✅ Message envoyé sur Telegram !','success');
+    else toast('❌ Erreur Telegram : '+d.description,'error');
+  }catch(e){toast('❌ Erreur réseau : '+e.message,'error');}
+}
+async function sendTelegramAlerts(crCount,urgentMachines){
+  if(crCount>0&&Date.now()-lastTgAlert>300000){
+    sendBrowserNotif('🔴 NECTA — Alerte urgente',crCount+' machine(s) nécessitent une intervention immédiate.');
+  }
+  if(!tgToken||!tgChatId||!crCount)return;
+  if(Date.now()-lastTgAlert<300000)return;
+  lastTgAlert=Date.now();
+  const msgs=urgentMachines.filter(m=>st(m)==='crit').map(m=>{const c=calcIng(m);return `🚨 *${m.name}*\nID: ${m.id}\nCafé: ${c.cafePct}% | Eau: ${c.eauPct}% | Gobelets: ${c.gobPct}%`;}).join('\n\n');
+  if(!msgs)return;
+  const text=`🔴 *NECTA Monitor — Alerte urgente*\n\n${msgs}\n\n⏱ ${new Date().toLocaleTimeString('fr-FR')}`;
+  try{await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:tgChatId,text,parse_mode:'Markdown'})});}catch(e){}
+}
+
+// ══ ALERTES ══
+function updateStats(){}
+function addAlert(text,level='warn'){
+  const a={text,level,time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
+  alerts.unshift(a);if(alerts.length>20)alerts.pop();
+  const html=alerts.map(a=>`<div class="alert-item"><div class="adot" style="background:${a.level==='crit'?'var(--red)':a.level==='info'?'var(--green)':'var(--amber)'}"></div><div><div class="atext">${a.text}</div><div class="atime">${a.time}</div></div></div>`).join('');
+  document.getElementById('alertsList').innerHTML=html||'<div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune alerte</div>';
+  document.getElementById('alertHistoire').innerHTML=html||'<div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune alerte</div>';
+}
+function log(txt,type=''){const b=document.getElementById('logBox');const d=document.createElement('div');d.className='ll '+type;d.textContent='$ '+txt;b.appendChild(d);b.scrollTop=b.scrollHeight;}
+function setNdot(cls,txt){document.getElementById('ndot').className='ndot '+cls;document.getElementById('nTxt').textContent=txt;}
+function toast(msg,type='info',duration=3500){const c=document.getElementById('toastContainer');const d=document.createElement('div');d.className='toast '+type;d.innerHTML=`<div class="toast-dot"></div><span>${msg}</span>`;c.appendChild(d);setTimeout(()=>{d.style.animation='fadeOut .3s ease forwards';setTimeout(()=>d.remove(),300);},duration);}
+
+// ══ TABS ══
+function switchTab(name,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('v-'+name).classList.add('active');btn.classList.add('active');
+  if(name==='boissons'){renderMachineList();renderDrinks();}
+  if(name==='ingredients')renderIngredients();
+  if(name==='stats')renderStats();
+  if(name==='carte')renderMap();
+  if(name==='ca'){renderPrices();updateCA();}
+  if(name==='alertes')renderRefillLog();
+}
+
+// ══ MQTT ══
+function connectMQTT(){
+  const host=document.getElementById('mHost').value.trim(),port=document.getElementById('mPort').value.trim()||'8884';
+  const user=document.getElementById('mUser').value.trim(),pass=document.getElementById('mPass').value;
+  const topic=document.getElementById('mTopic').value.trim()||'vending/etat';
+  if(!host){toast('Entrez l\'adresse du broker','warn');return;}
+  document.getElementById('mqttModal').classList.remove('open');
+  setNdot('bl','Connexion...');log('connexion à '+host+'...');
+  if(mqttClient)mqttClient.end();
+  mqttClient=mqtt.connect(`wss://${host}:${port}/mqtt`,{username:user,password:pass,reconnectPeriod:5000});
+  mqttClient.on('connect',()=>{setNdot('on','Connecté · '+host);log('connecté !','in');toast('MQTT connecté — '+host,'success');mqttClient.subscribe(topic,err=>log(err?'erreur':'abonné à '+topic,err?'er':'in'));});
+  mqttClient.on('message',(t,payload)=>{
+    try{
+      const d=JSON.parse(payload.toString());
+      if(d.id){
+        d.ts=Date.now();
+        if(!machines[d.id])machines[d.id]={boissons:Object.fromEntries(KEYS.map(k=>[k,0])),ing_cafe_init:1000,dose_cafe:7,ing_sucre_init:1000,dose_sucre:4,ing_lait_init:500,dose_lait:8,ing_choco_init:500,dose_choco:12,gobelets_init:200,bac:20,history:genHistory(),fillTime:Date.now(),lat:DEFAULT_COORDS[0]+(Math.random()-.5)*.05,lng:DEFAULT_COORDS[1]+(Math.random()-.5)*.05};
+        Object.assign(machines[d.id],d);
+        log('reçu : '+d.id,'in');
+        renderMachines();
+        if(document.getElementById('v-ingredients').classList.contains('active'))renderIngredients();
+        if(document.getElementById('v-boissons').classList.contains('active'))renderDrinks();
+      }
+    }catch(e){log('message invalide','er');}
+  });
+  mqttClient.on('error',e=>{setNdot('bl','Erreur');log('erreur : '+e.message,'er');});
+  mqttClient.on('offline',()=>{setNdot('bl','Déconnecté');log('connexion perdue','er');});
+}
+
+// ══ INIT ══
+(function init(){
+  loadTheme();
+  setTimeout(checkNotifBanner, 500);
+  // Si un token est stocké, on tente de restaurer la session
+  if(authToken){
+    authFetch('/api/workspaces/settings').then(res=>{
+      if(res && res.ok){
+        res.json().then(cfg=>{
+          // Récupère le rôle depuis le token stocké
+          try{
+            const payload=JSON.parse(atob(authToken.split('.')[1]));
+            currentRole=payload.role;
+            activeWorkspaceId=payload.workspaceId;
+            if(currentRole==='superadmin'){
+              // Superadmin → affiche la liste des workspaces
+              loadWorkspacesFromServer().then(()=>{
+                document.getElementById('loginScreen').style.display='none';
+                document.getElementById('wsView').style.display='block';
+              });
+            } else {
+              // Admin ou tech → charge les données et affiche le dashboard
+              loadAll().then(()=>{
+                document.getElementById('loginScreen').style.display='none';
+                document.getElementById('dashboard').style.display='flex';
+                switchView('v-machines');
+              });
+            }
+          }catch(e){
+            // Token illisible → déconnexion
+            doLogout();
+          }
+        });
+      } else {
+        // Token expiré ou invalide
+        doLogout();
+      }
+    }).catch(()=>{ doLogout(); });
+  }
+  // Sinon on reste sur l'écran de login (affiché par défaut)
+})();
+</script>
+<div id="toastContainer"></div>
+</body>
+</html>
