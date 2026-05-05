@@ -963,19 +963,24 @@ function renderWorkspaces(){
   addCard.onclick=()=>document.getElementById('wsCreateModal').classList.add('open');
   grid.appendChild(addCard);
 }
-function createWorkspace(){
+async function createWorkspace(){
   const name=document.getElementById('wsName').value.trim();
   const adminUser=document.getElementById('wsAdminUser').value.trim();
   const adminPass=document.getElementById('wsAdminPass').value;
   const techUser=document.getElementById('wsTechUser').value.trim();
   const techPass=document.getElementById('wsTechPass').value;
   if(!name||!adminUser||!adminPass||!techUser||!techPass){toast('Tous les champs sont requis','warn');return;}
-  const id='ws_'+Date.now();
-  workspaces[id]={id,name,adminUser,adminPass,techUser,techPass,machines:{},prices:JSON.parse(JSON.stringify(DEFAULT_PRICES)),threshCrit:15,threshWarn:35,refillLog:[],createdAt:Date.now()};
-  try{localStorage.setItem('nectaWorkspaces',JSON.stringify(workspaces));}catch(e){}
+  const btn=document.querySelector('#wsCreateModal .cfg-btn');
+  if(btn){btn.textContent='Création...';btn.disabled=true;}
+  const res=await authFetch('/api/workspaces',{method:'POST',body:JSON.stringify({
+    name,adminUsername:adminUser,adminPassword:adminPass,techUsername:techUser,techPassword:techPass
+  })});
+  if(btn){btn.textContent='Créer l\'espace';btn.disabled=false;}
+  if(!res||!res.ok){toast('Erreur lors de la création','error');return;}
   document.getElementById('wsCreateModal').classList.remove('open');
   ['wsName','wsAdminUser','wsAdminPass','wsTechUser','wsTechPass'].forEach(id=>document.getElementById(id).value='');
   toast('Espace "'+name+'" créé','success');
+  await loadWorkspacesFromServer();
   renderWorkspaces();
 }
 async function enterWorkspace(wsId){
