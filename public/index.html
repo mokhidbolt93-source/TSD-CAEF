@@ -344,6 +344,12 @@ body.light #techView{background:var(--bg)}
 .qr-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:.15s;flex-shrink:0}
 .qr-btn:hover{border-color:var(--purple);color:var(--purple)}
 
+/* ══ LOADING SCREEN ══ */
+#loadingScreen{position:fixed;inset:0;z-index:599;display:none;align-items:center;justify-content:center;background:var(--bg);flex-direction:column;gap:16px}
+#loadingScreen::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 20%,rgba(79,156,249,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 80% 80%,rgba(62,207,142,.05) 0%,transparent 70%);pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;position:relative;z-index:1}
+.ld-text{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em;position:relative;z-index:1}
 /* ══ PRINT ══ */
 @media print{
   #loginScreen,#wsView,nav,.tabs,.stats-bar,#techView,.modal-bg,#toastContainer,#notifBanner,.del-btn,.nbtn,button{display:none!important}
@@ -381,6 +387,12 @@ body.light #techView{background:var(--bg)}
     </div>
     <div class="login-footer">NECTA Monitor v3.0 — Admin, Technicien &amp; Super Admin</div>
   </div>
+</div>
+
+<!-- ══ LOADING SCREEN ══ -->
+<div id="loadingScreen">
+  <div class="ld-spinner"></div>
+  <div class="ld-text">CHARGEMENT EN COURS…</div>
 </div>
 
 <!-- ══ PORTAIL ══ -->
@@ -923,6 +935,7 @@ function doLogout(){
   localStorage.removeItem('nectaToken');
   machines={};
   if(techOpen){techOpen=false;document.getElementById('techView').style.display='none';document.getElementById('btnTech').classList.remove('active');}
+  document.getElementById('loadingScreen').style.display='none';
   document.getElementById('dashboard').style.display='none';
   document.getElementById('portal').style.display='none';
   document.getElementById('wsView').style.display='none';
@@ -949,6 +962,7 @@ async function saveNewCredentials(){
 
 // ══ WORKSPACES ══
 function renderWorkspaces(){
+  document.getElementById('loadingScreen').style.display='none';
   document.getElementById('wsView').style.display='block';
   document.getElementById('dashboard').style.display='none';
   document.getElementById('portal').style.display='none';
@@ -1702,6 +1716,9 @@ function connectMQTT(){
   setTimeout(checkNotifBanner, 500);
   // Si un token est stocké, on tente de restaurer la session
   if(authToken){
+    // Masquer immédiatement le login et afficher un loader
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('loadingScreen').style.display='flex';
     authFetch('/api/workspaces/settings').then(res=>{
       if(res && res.ok){
         res.json().then(cfg=>{
@@ -1713,13 +1730,12 @@ function connectMQTT(){
             if(currentRole==='superadmin'){
               // Superadmin → affiche la liste des workspaces
               loadWorkspacesFromServer().then(()=>{
-                document.getElementById('loginScreen').style.display='none';
-                renderWorkspaces();
+                renderWorkspaces(); // masque loadingScreen + affiche wsView
               });
             } else {
               // Admin ou tech → charge les données et affiche le dashboard
               loadAll().then(()=>{
-                document.getElementById('loginScreen').style.display='none';
+                document.getElementById('loadingScreen').style.display='none';
                 _applyRole(currentRole);
                 ouvrirDashboard();
                 if(currentRole==='tech')toggleTech();
