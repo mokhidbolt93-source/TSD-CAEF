@@ -889,6 +889,7 @@ async function doLogin(){
     currentRole=data.role;
     activeWorkspaceId=data.workspaceId||null;
     localStorage.setItem('nectaToken',authToken);
+    if(data.role==='superadmin')localStorage.setItem('nectaSuperToken',authToken);
     document.getElementById('loginScreen').style.display='none';
     if(currentRole==='superadmin'){
       await loadWorkspacesFromServer();
@@ -1017,7 +1018,7 @@ async function loadWorkspacesFromServer(){
 async function retourWorkspaces(){
   await saveAll();
   // Restaurer le token superadmin
-  authToken=localStorage.getItem('nectaToken')||'';
+  authToken=localStorage.getItem('nectaSuperToken')||localStorage.getItem('nectaToken')||'';
   activeWorkspaceId=null;machines={};
   document.getElementById('dashboard').style.display='none';
   document.getElementById('btnClients').style.display='none';
