@@ -1688,8 +1688,9 @@ function connectMQTT(){
               // Admin ou tech → charge les données et affiche le dashboard
               loadAll().then(()=>{
                 document.getElementById('loginScreen').style.display='none';
-                document.getElementById('dashboard').style.display='flex';
-                switchView('v-machines');
+                _applyRole(currentRole);
+                ouvrirDashboard();
+                if(currentRole==='tech')toggleTech();
               });
             }
           }catch(e){
