@@ -1518,35 +1518,68 @@ async function geocodeEditAddress(){
   const rue=document.getElementById('editMachineRue').value.trim();
   const cp=document.getElementById('editMachineCp').value.trim();
   const ville=document.getElementById('editMachineVille').value.trim();
-  const q=[rue,cp,ville].filter(Boolean).join(', ');
-  if(!q){toast('Renseignez au moins la rue ou la ville','warn');return;}
+  if(!rue&&!ville){toast('Renseignez au moins la rue ou la ville','warn');return;}
   const btn=document.getElementById('geocodeBtn');
   btn.textContent='⏳ Recherche...';btn.disabled=true;
   const resEl=document.getElementById('geocodeResult');
+  resEl.style.display='none';
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(q)}&limit=1&countrycodes=fr`,{headers:{'Accept-Language':'fr'}});
-    const d=await r.json();
-    if(d&&d[0]){
-      const lat=parseFloat(d[0].lat),lng=parseFloat(d[0].lon);
+    // ── 1re tentative : BAN (Base Adresse Nationale) — précision exacte pour la France ──
+    const q=[rue,ville].filter(Boolean).join(' ');
+    let banUrl=`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=1`;
+    if(cp)banUrl+=`&postcode=${encodeURIComponent(cp)}`;
+    const banRes=await fetch(banUrl);
+    const banData=await banRes.json();
+    const feat=banData?.features?.[0];
+    if(feat){
+      const [lng,lat]=feat.geometry.coordinates;
+      const p=feat.properties;
       document.getElementById('editMachineLat').value=lat.toFixed(6);
       document.getElementById('editMachineLng').value=lng.toFixed(6);
-      // Auto-remplir CP et ville depuis la réponse Nominatim
-      const addr=d[0].address||{};
-      const foundVille=addr.city||addr.town||addr.village||addr.municipality||'';
-      const foundCp=addr.postcode||'';
-      const foundRue=[addr.house_number,addr.road].filter(Boolean).join(' ');
-      if(foundCp&&!cp)document.getElementById('editMachineCp').value=foundCp;
-      if(foundVille&&!ville)document.getElementById('editMachineVille').value=foundVille;
-      if(foundRue&&!rue)document.getElementById('editMachineRue').value=foundRue;
+      // Auto-remplir les champs vides depuis la BAN
+      if(!cp&&p.postcode)document.getElementById('editMachineCp').value=p.postcode;
+      if(!ville&&p.city)document.getElementById('editMachineVille').value=p.city;
+      if(!rue&&p.name)document.getElementById('editMachineRue').value=p.name;
+      // Vérifier si le numéro de rue correspond
+      const numSaisi=rue.match(/^\d+/)?.[0];
+      const numTrouve=p.housenumber||p.name?.match(/^\d+/)?.[0];
+      const numOk=!numSaisi||numSaisi===numTrouve;
       resEl.style.display='block';
-      resEl.innerHTML=`✅ Trouvé : <b>${d[0].display_name.split(',').slice(0,3).join(',')}</b><br><span style="color:var(--accent)">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
-      toast('Position trouvée avec succès','success');
+      resEl.innerHTML=`<span style="color:var(--green)">✅ Adresse exacte (BAN officielle)</span><br>`
+        +`<b>${p.label||feat.properties.name}</b><br>`
+        +`<span style="color:var(--accent)">${lat.toFixed(6)}, ${lng.toFixed(6)}</span>`
+        +(numTrouve&&!numOk?`<br><span style="color:var(--amber)">⚠ Numéro retourné : <b>${numTrouve}</b> — vérifiez si c'est correct</span>`:'');
+      toast('✅ Position exacte trouvée (BAN)','success');
+      btn.textContent='📍 Géolocaliser automatiquement';btn.disabled=false;
+      return;
+    }
+    // ── 2e tentative : Nominatim (fallback hors France) ──
+    const nomQ=[rue,cp,ville].filter(Boolean).join(', ');
+    const nomRes=await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(nomQ)}&limit=1`,{headers:{'Accept-Language':'fr'}});
+    const nomData=await nomRes.json();
+    if(nomData&&nomData[0]){
+      const lat=parseFloat(nomData[0].lat),lng=parseFloat(nomData[0].lon);
+      document.getElementById('editMachineLat').value=lat.toFixed(6);
+      document.getElementById('editMachineLng').value=lng.toFixed(6);
+      const addr=nomData[0].address||{};
+      if(!cp&&addr.postcode)document.getElementById('editMachineCp').value=addr.postcode;
+      if(!ville)(addr.city||addr.town||addr.village)&&(document.getElementById('editMachineVille').value=addr.city||addr.town||addr.village);
+      resEl.style.display='block';
+      resEl.innerHTML=`<span style="color:var(--amber)">⚠ Résultat approché (OpenStreetMap)</span><br>`
+        +`<b>${nomData[0].display_name.split(',').slice(0,3).join(',')}</b><br>`
+        +`<span style="color:var(--accent)">${lat.toFixed(6)}, ${lng.toFixed(6)}</span><br>`
+        +`<span style="color:var(--muted)">Vérifiez les coordonnées — le numéro de rue peut être approximatif</span>`;
+      toast('Position trouvée (approximative)','warn');
     }else{
       resEl.style.display='block';
-      resEl.innerHTML='<span style="color:var(--amber)">⚠ Adresse introuvable — vérifiez les champs ou entrez les coordonnées manuellement</span>';
+      resEl.innerHTML='<span style="color:var(--red)">❌ Adresse introuvable — vérifiez les champs ou saisissez les coordonnées manuellement</span>';
       toast('Adresse introuvable','warn');
     }
-  }catch(e){toast('Erreur de géocodage','error');}
+  }catch(e){
+    resEl.style.display='block';
+    resEl.innerHTML='<span style="color:var(--red)">❌ Erreur réseau — vérifiez votre connexion</span>';
+    toast('Erreur de géocodage','error');
+  }
   btn.textContent='📍 Géolocaliser automatiquement';btn.disabled=false;
 }
 function saveEditMachine(){
