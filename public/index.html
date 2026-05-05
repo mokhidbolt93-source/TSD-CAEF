@@ -727,6 +727,9 @@ body.light #techView{background:var(--bg)}
       <div id="addrChangedWarn" style="display:none;font-family:var(--mono);font-size:11px;color:var(--amber);padding:4px 0">⚠ Adresse modifiée — cliquez sur Géolocaliser pour mettre à jour les coordonnées</div>
       <button class="cfg-btn" id="geocodeBtn" onclick="geocodeEditAddress()" style="margin:0">📍 Géolocaliser automatiquement</button>
       <div id="geocodeResult" style="font-family:var(--mono);font-size:11px;color:var(--muted);display:none;padding:4px 0;line-height:1.7"></div>
+      <!-- Mini carte draggable -->
+      <div id="editMachineMap" style="display:none;height:220px;border-radius:8px;border:1px solid var(--border);overflow:hidden;position:relative"></div>
+      <div id="editMapHint" style="display:none;font-family:var(--mono);font-size:10px;color:var(--muted);padding:3px 0 2px">☝ Faites glisser le marqueur pour ajuster la position exacte</div>
       <div style="display:flex;gap:8px;align-items:flex-end">
         <div style="flex:1">
           <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Latitude</div>
@@ -736,7 +739,6 @@ body.light #techView{background:var(--bg)}
           <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Longitude</div>
           <input class="cfg-in" id="editMachineLng" type="number" step="0.000001" placeholder="ex: 2.402800" style="margin:0"/>
         </div>
-        <a id="verifyMapsBtn" href="#" target="_blank" style="display:none;flex-shrink:0;font-family:var(--mono);font-size:11px;padding:10px 12px;border:1px solid rgba(62,207,142,.4);color:var(--green);border-radius:8px;text-decoration:none;white-space:nowrap;margin-bottom:0" title="Vérifier la position sur Google Maps">🗺 Vérifier</a>
       </div>
     </div>
 
@@ -745,7 +747,7 @@ body.light #techView{background:var(--bg)}
     <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Dose café (g/espresso)</div>
     <input class="cfg-in" id="editMachineDoseCafe" type="number" min="1" max="20" placeholder="ex: 7"/>
     <button class="cfg-btn" onclick="saveEditMachine()" style="margin-top:10px">Enregistrer</button>
-    <br><button class="modal-close" onclick="document.getElementById('editMachineModal').classList.remove('open')">Annuler</button>
+    <br><button class="modal-close" onclick="closeEditModal()">Annuler</button>
   </div>
 </div>
 
@@ -1518,12 +1520,14 @@ function openEditMachine(id){
   document.getElementById('editMachineDoseCafe').value=m.dose_cafe||7;
   document.getElementById('geocodeResult').style.display='none';
   document.getElementById('addrChangedWarn').style.display='none';
-  document.getElementById('verifyMapsBtn').style.display='none';
-  // Afficher le bouton Vérifier si des coordonnées existent déjà
+  // Si la machine a déjà des coordonnées, afficher la carte directement
   if(m.lat&&m.lng){
-    const vBtn=document.getElementById('verifyMapsBtn');
-    vBtn.href=`https://www.google.com/maps?q=${m.lat},${m.lng}&z=18`;
-    vBtn.style.display='inline-flex';
+    setTimeout(()=>initEditMap(m.lat,m.lng),200);
+  } else {
+    // Pas de coordonnées : cacher la carte
+    if(_editMap){_editMap.remove();_editMap=null;_editMarker=null;}
+    document.getElementById('editMachineMap').style.display='none';
+    document.getElementById('editMapHint').style.display='none';
   }
   // Détecter les modifications d'adresse pour avertir de re-géolocaliser
   ['editMachineRue','editMachineCp','editMachineVille'].forEach(fid=>{
@@ -1605,10 +1609,42 @@ async function geocodeEditAddress(){
   }
   btn.textContent='📍 Géolocaliser automatiquement';btn.disabled=false;
 }
+let _editMap=null,_editMarker=null;
+function initEditMap(lat,lng){
+  const mapEl=document.getElementById('editMachineMap');
+  const hint=document.getElementById('editMapHint');
+  mapEl.style.display='block';
+  hint.style.display='block';
+  // Détruire l'ancienne instance si elle existe
+  if(_editMap){_editMap.remove();_editMap=null;_editMarker=null;}
+  _editMap=L.map('editMachineMap',{zoomControl:true,attributionControl:false}).setView([lat,lng],17);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(_editMap);
+  // Marqueur draggable
+  _editMarker=L.marker([lat,lng],{draggable:true,title:'Faites glisser pour ajuster'}).addTo(_editMap);
+  _editMarker.on('dragend',function(){
+    const p=_editMarker.getLatLng();
+    document.getElementById('editMachineLat').value=p.lat.toFixed(6);
+    document.getElementById('editMachineLng').value=p.lng.toFixed(6);
+  });
+  // Clic sur la carte pour repositionner le marqueur
+  _editMap.on('click',function(e){
+    _editMarker.setLatLng(e.latlng);
+    document.getElementById('editMachineLat').value=e.latlng.lat.toFixed(6);
+    document.getElementById('editMachineLng').value=e.latlng.lng.toFixed(6);
+  });
+  setTimeout(()=>_editMap&&_editMap.invalidateSize(),150);
+}
+function closeEditModal(){
+  document.getElementById('editMachineModal').classList.remove('open');
+  if(_editMap){_editMap.remove();_editMap=null;_editMarker=null;}
+  document.getElementById('editMachineMap').style.display='none';
+  document.getElementById('editMapHint').style.display='none';
+  document.getElementById('geocodeResult').style.display='none';
+  document.getElementById('addrChangedWarn').style.display='none';
+}
 function _showVerifyBtn(lat,lng){
-  const v=document.getElementById('verifyMapsBtn');
-  v.href=`https://www.google.com/maps?q=${lat},${lng}&z=18`;
-  v.style.display='inline-flex';
+  // Remplacé par la carte inline — on initialise directement la carte
+  initEditMap(lat,lng);
 }
 function saveEditMachine(){
   const id=document.getElementById('editMachineId').value;
