@@ -892,7 +892,7 @@ async function doLogin(){
     document.getElementById('loginScreen').style.display='none';
     if(currentRole==='superadmin'){
       await loadWorkspacesFromServer();
-      document.getElementById('wsView').style.display='block';
+      renderWorkspaces();
     } else {
       _applyRole(currentRole);
       await loadAll();
@@ -948,8 +948,10 @@ function renderWorkspaces(){
   wsList.forEach(ws=>{
     const card=document.createElement('div');
     card.className='ws-card';
+    const adminU=(ws.users||[]).find(u=>u.role==='admin');
+    const techU=(ws.users||[]).find(u=>u.role==='tech');
     card.innerHTML=`<div class="ws-card-name">${ws.name}</div>
-      <div class="ws-card-meta">Admin : <b>${ws.adminUser}</b><br>Tech : <b>${ws.techUser}</b><br>Machines : <b>${Object.keys(ws.machines||{}).length}</b><br>Créé : <b>${new Date(ws.createdAt).toLocaleDateString('fr-FR')}</b></div>
+      <div class="ws-card-meta">Admin : <b>${adminU?adminU.username:'—'}</b><br>Tech : <b>${techU?techU.username:'—'}</b><br>Machines : <b>${ws.machineCount||0}</b><br>Créé : <b>${new Date(ws.created_at).toLocaleDateString('fr-FR')}</b></div>
       <div class="ws-card-badge">▶ Entrer dans l'espace</div>`;
     card.onclick=()=>enterWorkspace(ws.id);
     grid.appendChild(card);
@@ -1674,7 +1676,7 @@ function connectMQTT(){
               // Superadmin → affiche la liste des workspaces
               loadWorkspacesFromServer().then(()=>{
                 document.getElementById('loginScreen').style.display='none';
-                document.getElementById('wsView').style.display='block';
+                renderWorkspaces();
               });
             } else {
               // Admin ou tech → charge les données et affiche le dashboard
