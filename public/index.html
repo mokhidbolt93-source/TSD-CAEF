@@ -1358,6 +1358,9 @@ function deleteMachine(id){
     toast('🗑 '+name+' supprimée','warn');
     log('suppression : '+id,'er');
     addAlert(name+' supprimée','warn');
+    logIntervention(id,name,'delete',{by:currentRole});
+    // Supprimer en base (le bulk ne supprime pas, seulement upsert)
+    authFetch('/api/machines/'+encodeURIComponent(id),{method:'DELETE'});
     saveAll();
     renderMachines();
     renderMachineList();
