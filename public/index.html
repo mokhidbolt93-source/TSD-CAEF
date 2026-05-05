@@ -665,7 +665,16 @@ body.light #techView{background:var(--bg)}
     <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Lieu</div>
     <input class="cfg-in" id="editMachineLieu" placeholder="Lieu / Code postal"/>
     <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Adresse complète (GPS)</div>
-    <input class="cfg-in" id="editMachineAdresse" placeholder="Adresse pour GPS"/>
+    <div style="display:flex;gap:6px">
+      <input class="cfg-in" id="editMachineAdresse" placeholder="Adresse pour GPS" style="flex:1"/>
+      <button class="cfg-btn" onclick="geocodeEditAddress()" style="white-space:nowrap;padding:0 12px;margin:0" title="Localiser automatiquement">📍 Localiser</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <div style="flex:1"><div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Latitude</div>
+      <input class="cfg-in" id="editMachineLat" type="number" step="0.0001" placeholder="ex: 48.9736"/></div>
+      <div style="flex:1"><div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Longitude</div>
+      <input class="cfg-in" id="editMachineLng" type="number" step="0.0001" placeholder="ex: 2.4028"/></div>
+    </div>
     <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Capacité bac d'eau (L)</div>
     <input class="cfg-in" id="editMachineBac" type="number" min="5" max="50" placeholder="ex: 20"/>
     <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Dose café (g/espresso)</div>
@@ -1330,9 +1339,27 @@ function openEditMachine(id){
   document.getElementById('editMachineName').value=m.name||'';
   document.getElementById('editMachineLieu').value=m.lieu||'';
   document.getElementById('editMachineAdresse').value=m.adresse||'';
+  document.getElementById('editMachineLat').value=m.lat||'';
+  document.getElementById('editMachineLng').value=m.lng||'';
   document.getElementById('editMachineBac').value=m.bac||20;
   document.getElementById('editMachineDoseCafe').value=m.dose_cafe||7;
   document.getElementById('editMachineModal').classList.add('open');
+}
+async function geocodeEditAddress(){
+  const addr=document.getElementById('editMachineAdresse').value.trim();
+  if(!addr){toast('Entrez une adresse d\'abord','warn');return;}
+  const btn=document.querySelector('#editMachineModal .cfg-btn');
+  btn.textContent='⏳ Recherche...';btn.disabled=true;
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(addr)+'&limit=1',{headers:{'Accept-Language':'fr'}});
+    const d=await r.json();
+    if(d&&d[0]){
+      document.getElementById('editMachineLat').value=parseFloat(d[0].lat).toFixed(6);
+      document.getElementById('editMachineLng').value=parseFloat(d[0].lon).toFixed(6);
+      toast('Position trouvée : '+d[0].display_name.split(',').slice(0,2).join(','),'success');
+    }else{toast('Adresse introuvable, entrez les coordonnées manuellement','warn');}
+  }catch(e){toast('Erreur de géocodage','error');}
+  btn.textContent='📍 Localiser';btn.disabled=false;
 }
 function saveEditMachine(){
   const id=document.getElementById('editMachineId').value;
@@ -1342,6 +1369,9 @@ function saveEditMachine(){
   m.name=name;
   m.lieu=document.getElementById('editMachineLieu').value.trim()||'—';
   m.adresse=document.getElementById('editMachineAdresse').value.trim();
+  const lat=parseFloat(document.getElementById('editMachineLat').value);
+  const lng=parseFloat(document.getElementById('editMachineLng').value);
+  if(!isNaN(lat)&&!isNaN(lng)){m.lat=lat;m.lng=lng;}
   const bac=parseInt(document.getElementById('editMachineBac').value)||20;
   m.bac=Math.min(50,Math.max(5,bac));
   const dose=parseInt(document.getElementById('editMachineDoseCafe').value)||7;
