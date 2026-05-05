@@ -700,26 +700,49 @@ body.light #techView{background:var(--bg)}
     <h2>✏ Modifier la machine</h2>
     <p>Modifiez les informations de la machine.</p>
     <input type="hidden" id="editMachineId"/>
-    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Nom</div>
-    <input class="cfg-in" id="editMachineName" placeholder="Nom de la machine"/>
-    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Lieu</div>
-    <input class="cfg-in" id="editMachineLieu" placeholder="Lieu / Code postal"/>
-    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Adresse complète (GPS)</div>
-    <div style="display:flex;gap:6px">
-      <input class="cfg-in" id="editMachineAdresse" placeholder="Adresse pour GPS" style="flex:1"/>
-      <button class="cfg-btn" onclick="geocodeEditAddress()" style="white-space:nowrap;padding:0 12px;margin:0" title="Localiser automatiquement">📍 Localiser</button>
+
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Nom de la machine</div>
+    <input class="cfg-in" id="editMachineName" placeholder="ex: GARGES CENTRE"/>
+
+    <div style="font-size:10px;font-family:var(--mono);color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px">📍 Localisation</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Adresse (numéro + rue)</div>
+        <input class="cfg-in" id="editMachineRue" placeholder="ex: 16 rue de l'Antenne" style="margin:0"/>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:0 0 110px">
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Code postal</div>
+          <input class="cfg-in" id="editMachineCp" placeholder="ex: 93120" style="margin:0"/>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Ville</div>
+          <input class="cfg-in" id="editMachineVille" placeholder="ex: Garges-lès-Gonesse" style="margin:0"/>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Localisation précise (optionnel)</div>
+        <input class="cfg-in" id="editMachineLieu" placeholder="ex: Hall d'entrée, Cafétéria, Étage 2…" style="margin:0"/>
+      </div>
+      <button class="cfg-btn" id="geocodeBtn" onclick="geocodeEditAddress()" style="margin:0">📍 Géolocaliser automatiquement</button>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1">
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Latitude</div>
+          <input class="cfg-in" id="editMachineLat" type="number" step="0.000001" placeholder="ex: 48.973600" style="margin:0"/>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Longitude</div>
+          <input class="cfg-in" id="editMachineLng" type="number" step="0.000001" placeholder="ex: 2.402800" style="margin:0"/>
+        </div>
+      </div>
+      <div id="geocodeResult" style="font-family:var(--mono);font-size:11px;color:var(--muted);display:none;padding:4px 0"></div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:6px">
-      <div style="flex:1"><div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Latitude</div>
-      <input class="cfg-in" id="editMachineLat" type="number" step="0.0001" placeholder="ex: 48.9736"/></div>
-      <div style="flex:1"><div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Longitude</div>
-      <input class="cfg-in" id="editMachineLng" type="number" step="0.0001" placeholder="ex: 2.4028"/></div>
-    </div>
-    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Capacité bac d'eau (L)</div>
+
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 5px">Capacité bac d'eau (L)</div>
     <input class="cfg-in" id="editMachineBac" type="number" min="5" max="50" placeholder="ex: 20"/>
     <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Dose café (g/espresso)</div>
     <input class="cfg-in" id="editMachineDoseCafe" type="number" min="1" max="20" placeholder="ex: 7"/>
-    <button class="cfg-btn" onclick="saveEditMachine()" style="margin-top:6px">Enregistrer</button>
+    <button class="cfg-btn" onclick="saveEditMachine()" style="margin-top:10px">Enregistrer</button>
     <br><button class="modal-close" onclick="document.getElementById('editMachineModal').classList.remove('open')">Annuler</button>
   </div>
 </div>
@@ -1253,7 +1276,8 @@ function renderMachines(){
     const d=document.createElement('div');
     d.className='card '+(s==='warn'?'warn':s==='crit'?'crit':'');
     d.onclick=()=>{selMachine=m.id;switchTab('ingredients',document.querySelectorAll('.tab')[1]);};
-    d.innerHTML=`<div class="card-head"><div><div class="card-id">${m.id}${m.lieu&&m.lieu!=='—'?' · '+m.lieu:''}</div><div class="card-name">${m.name}</div></div><div style="display:flex;align-items:center;gap:4px">${badgeHtml(s)}<button class="edit-btn" onclick="event.stopPropagation();openEditMachine('${m.id}')">✏</button><button class="qr-btn" onclick="event.stopPropagation();openQR('${m.id}')">QR</button><button id="del_${m.id}" class="del-btn" onclick="event.stopPropagation();deleteMachine('${m.id}')">✕</button></div></div>
+    const addrLine=[m.rue,m.cp&&m.ville?m.cp+' '+m.ville:m.cp||m.ville].filter(Boolean).join(' · ')||m.lieu||'';
+    d.innerHTML=`<div class="card-head"><div><div class="card-id">${m.id}${addrLine?' · '+addrLine:''}</div><div class="card-name">${m.name}</div></div><div style="display:flex;align-items:center;gap:4px">${badgeHtml(s)}<button class="edit-btn" onclick="event.stopPropagation();openEditMachine('${m.id}')">✏</button><button class="qr-btn" onclick="event.stopPropagation();openQR('${m.id}')">QR</button><button id="del_${m.id}" class="del-btn" onclick="event.stopPropagation();deleteMachine('${m.id}')">✕</button></div></div>
     <div class="card-body">
       ${[['☕ Café',c.cafePct],['🍬 Sucre',c.sucrePct],['🥛 Lait',c.laitPct],['🍫 Choco',c.chocoPct],['🥤 Gobelets',c.gobPct]].map(([n,v])=>`<div class="lv-name">${n}</div><div class="lv-row"><div class="bar-bg"><div class="bar-fill" style="width:${v}%;background:${bc(v)}"></div></div><div class="pct">${v}%</div></div>`).join('')}
       <hr class="divider-dash">
@@ -1479,29 +1503,51 @@ function openEditMachine(id){
   const m=machines[id];if(!m)return;
   document.getElementById('editMachineId').value=id;
   document.getElementById('editMachineName').value=m.name||'';
-  document.getElementById('editMachineLieu').value=m.lieu||'';
-  document.getElementById('editMachineAdresse').value=m.adresse||'';
+  document.getElementById('editMachineRue').value=m.rue||m.adresse||'';
+  document.getElementById('editMachineCp').value=m.cp||'';
+  document.getElementById('editMachineVille').value=m.ville||'';
+  document.getElementById('editMachineLieu').value=m.lieu&&m.lieu!=='—'?m.lieu:'';
   document.getElementById('editMachineLat').value=m.lat||'';
   document.getElementById('editMachineLng').value=m.lng||'';
   document.getElementById('editMachineBac').value=m.bac||20;
   document.getElementById('editMachineDoseCafe').value=m.dose_cafe||7;
+  document.getElementById('geocodeResult').style.display='none';
   document.getElementById('editMachineModal').classList.add('open');
 }
 async function geocodeEditAddress(){
-  const addr=document.getElementById('editMachineAdresse').value.trim();
-  if(!addr){toast('Entrez une adresse d\'abord','warn');return;}
-  const btn=document.querySelector('#editMachineModal .cfg-btn');
+  const rue=document.getElementById('editMachineRue').value.trim();
+  const cp=document.getElementById('editMachineCp').value.trim();
+  const ville=document.getElementById('editMachineVille').value.trim();
+  const q=[rue,cp,ville].filter(Boolean).join(', ');
+  if(!q){toast('Renseignez au moins la rue ou la ville','warn');return;}
+  const btn=document.getElementById('geocodeBtn');
   btn.textContent='⏳ Recherche...';btn.disabled=true;
+  const resEl=document.getElementById('geocodeResult');
   try{
-    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(addr)+'&limit=1',{headers:{'Accept-Language':'fr'}});
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(q)}&limit=1&countrycodes=fr`,{headers:{'Accept-Language':'fr'}});
     const d=await r.json();
     if(d&&d[0]){
-      document.getElementById('editMachineLat').value=parseFloat(d[0].lat).toFixed(6);
-      document.getElementById('editMachineLng').value=parseFloat(d[0].lon).toFixed(6);
-      toast('Position trouvée : '+d[0].display_name.split(',').slice(0,2).join(','),'success');
-    }else{toast('Adresse introuvable, entrez les coordonnées manuellement','warn');}
+      const lat=parseFloat(d[0].lat),lng=parseFloat(d[0].lon);
+      document.getElementById('editMachineLat').value=lat.toFixed(6);
+      document.getElementById('editMachineLng').value=lng.toFixed(6);
+      // Auto-remplir CP et ville depuis la réponse Nominatim
+      const addr=d[0].address||{};
+      const foundVille=addr.city||addr.town||addr.village||addr.municipality||'';
+      const foundCp=addr.postcode||'';
+      const foundRue=[addr.house_number,addr.road].filter(Boolean).join(' ');
+      if(foundCp&&!cp)document.getElementById('editMachineCp').value=foundCp;
+      if(foundVille&&!ville)document.getElementById('editMachineVille').value=foundVille;
+      if(foundRue&&!rue)document.getElementById('editMachineRue').value=foundRue;
+      resEl.style.display='block';
+      resEl.innerHTML=`✅ Trouvé : <b>${d[0].display_name.split(',').slice(0,3).join(',')}</b><br><span style="color:var(--accent)">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
+      toast('Position trouvée avec succès','success');
+    }else{
+      resEl.style.display='block';
+      resEl.innerHTML='<span style="color:var(--amber)">⚠ Adresse introuvable — vérifiez les champs ou entrez les coordonnées manuellement</span>';
+      toast('Adresse introuvable','warn');
+    }
   }catch(e){toast('Erreur de géocodage','error');}
-  btn.textContent='📍 Localiser';btn.disabled=false;
+  btn.textContent='📍 Géolocaliser automatiquement';btn.disabled=false;
 }
 function saveEditMachine(){
   const id=document.getElementById('editMachineId').value;
@@ -1509,8 +1555,12 @@ function saveEditMachine(){
   const name=document.getElementById('editMachineName').value.trim();
   if(!name){toast('Le nom est requis','warn');return;}
   m.name=name;
+  m.rue=document.getElementById('editMachineRue').value.trim();
+  m.cp=document.getElementById('editMachineCp').value.trim();
+  m.ville=document.getElementById('editMachineVille').value.trim();
   m.lieu=document.getElementById('editMachineLieu').value.trim()||'—';
-  m.adresse=document.getElementById('editMachineAdresse').value.trim();
+  // Adresse complète pour compatibilité GPS
+  m.adresse=[m.rue,m.cp,m.ville].filter(Boolean).join(', ');
   const lat=parseFloat(document.getElementById('editMachineLat').value);
   const lng=parseFloat(document.getElementById('editMachineLng').value);
   if(!isNaN(lat)&&!isNaN(lng)){m.lat=lat;m.lng=lng;}
@@ -1761,7 +1811,7 @@ function renderTech(){
           <div class="tc-num" style="color:${sc};border-color:${numBd};background:${numBg}">#${i+1}</div>
           <div class="tc-meta">
             <div class="tc-name">${m.name}${distBadge}</div>
-            <div class="tc-loc">📍 ${m.lieu&&m.lieu!=='—'?m.lieu:'—'} · ${m.id}</div>
+            <div class="tc-loc">📍 ${[m.rue,m.cp&&m.ville?m.cp+' '+m.ville:m.cp||m.ville].filter(Boolean).join(', ')||'—'}${m.lieu&&m.lieu!=='—'?' · '+m.lieu:''} <span style="color:var(--border2)">·</span> <span style="color:var(--muted2)">${m.id}</span></div>
           </div>
           <div class="tc-status">
             <span class="tc-badge ${badgeCls}">${badgeTxt}</span>
