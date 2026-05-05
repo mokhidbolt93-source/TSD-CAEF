@@ -976,7 +976,7 @@ function createWorkspace(){
   toast('Espace "'+name+'" créé','success');
   renderWorkspaces();
 }
-function enterWorkspace(wsId){
+async function enterWorkspace(wsId){
   const ws=workspaces[wsId];
   if(!ws)return;
   // Obtenir un token scopé pour ce workspace
