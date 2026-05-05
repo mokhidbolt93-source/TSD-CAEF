@@ -1002,6 +1002,7 @@ async function enterWorkspace(wsId){
   const data=await res.json();
   authToken=data.token;
   activeWorkspaceId=wsId;
+  currentRole='admin'; // superadmin agit en tant qu'admin dans ce workspace
   localStorage.setItem('nectaToken',authToken);
   machines={};prices=JSON.parse(JSON.stringify(DEFAULT_PRICES));
   document.getElementById('wsView').style.display='none';
@@ -1028,6 +1029,7 @@ async function retourWorkspaces(){
   await saveAll();
   // Restaurer le token superadmin
   authToken=localStorage.getItem('nectaSuperToken')||localStorage.getItem('nectaToken')||'';
+  currentRole='superadmin';
   activeWorkspaceId=null;machines={};
   document.getElementById('dashboard').style.display='none';
   document.getElementById('btnClients').style.display='none';
