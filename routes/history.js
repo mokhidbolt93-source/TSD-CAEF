@@ -2,13 +2,16 @@ const router = require('express').Router();
 const { requireAuth } = require('../middleware/auth');
 const { supabase } = require('../db/supabase');
 
-// GET /api/history  — récupérer l'historique des interventions
+// GET /api/history  — récupérer l'historique des interventions (3 mois par défaut)
 router.get('/', requireAuth, async (req, res) => {
-  const limit = parseInt(req.query.limit) || 100;
+  const limit = parseInt(req.query.limit) || 500;
+  // Filtre 3 mois par défaut (90 jours)
+  const since = req.query.since || new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await supabase
     .from('interventions')
     .select('*')
     .eq('workspace_id', req.user.workspaceId)
+    .gte('done_at', since)
     .order('done_at', { ascending: false })
     .limit(limit);
 

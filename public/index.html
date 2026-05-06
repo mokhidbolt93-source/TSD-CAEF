@@ -124,15 +124,25 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 .ca-val{color:var(--green);font-weight:500}
 .prediction{font-size:10px;font-family:var(--mono);color:var(--amber);margin-top:2px}
 /* Sidebar */
-.sidebar{display:flex;flex-direction:column;gap:11px}
+.sidebar{display:flex;flex-direction:column;gap:11px;position:sticky;top:70px;max-height:calc(100vh - 80px);overflow-y:auto}
 .panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px}
-.panel-title{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.panel-title{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.panel-title-sub{font-size:9px;color:var(--muted);opacity:.7;text-transform:none;letter-spacing:0}
 .alert-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)}
 .alert-item:last-child{border-bottom:none}
 .adot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0}
 .atext{font-size:11px;font-family:var(--mono);line-height:1.5}
 .atime{font-size:10px;color:var(--muted);margin-top:1px}
 .log-box{background:var(--bg3);border-radius:6px;padding:8px;height:90px;overflow-y:auto;font-family:var(--mono);font-size:10px;line-height:1.6}
+/* Historique des interventions (sidebar) */
+.hist-item{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.hist-item:last-child{border-bottom:none}
+.hist-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.hist-body{flex:1;min-width:0}
+.hist-type{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-machine{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-who{font-family:var(--mono);font-size:10px;color:var(--purple);margin-top:1px}
+.hist-when{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:1px}
 .ll{color:var(--muted)}.ll.in{color:var(--green)}.ll.er{color:var(--red)}
 /* Ingredients */
 .ing-layout{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
@@ -253,9 +263,11 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 .tc-rfbtn.rf-ok{border-color:rgba(62,207,142,.3);color:var(--green)}.tc-rfbtn.rf-ok:hover{background:rgba(62,207,142,.1)}
 .tc-rfbtn.rf-all{border-color:rgba(79,156,249,.4);color:var(--accent);margin-left:auto}.tc-rfbtn.rf-all:hover{background:rgba(79,156,249,.1)}
 /* ══ VISITED / DISTANCE ══ */
-.tc.tc-done{opacity:.38;filter:grayscale(.5)}
+.tc.tc-done{border-color:rgba(62,207,142,.4)!important;background:rgba(62,207,142,.05)}
+.tc.tc-done .tc-strip{background:var(--green)!important}
 .tc-visited-btn{font-family:var(--mono);font-size:10px;padding:5px 11px;border-radius:5px;cursor:pointer;border:1px solid var(--border2);background:none;color:var(--muted);transition:.15s;white-space:nowrap}
-.tc-visited-btn:hover{border-color:var(--green);color:var(--green)}.tc-visited-btn.vdone{border-color:var(--green);color:var(--green);background:rgba(62,207,142,.08)}
+.tc-visited-btn:hover{border-color:var(--green);color:var(--green)}
+.tc-visited-btn.vdone{border-color:var(--green);color:#0a0e14;background:var(--green);font-weight:700}
 .tc-dist{font-family:var(--mono);font-size:10px;color:var(--accent);background:rgba(79,156,249,.07);border:1px solid rgba(79,156,249,.15);border-radius:4px;padding:2px 6px}
 @media(max-width:640px){.tc-rings{grid-template-columns:repeat(3,1fr)}.tech-summary{grid-template-columns:repeat(2,1fr)}.tech-inner{padding:14px 15px}.tech-toolbar{gap:6px}}
 /* Telegram */
@@ -338,10 +350,10 @@ body.light #techView{background:var(--bg)}
 .export-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border2);color:var(--muted2);padding:6px 13px;border-radius:7px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s}
 .export-btn:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ══ REFILL LOG ══ */
-.refill-log-item{padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px}
+/* ══ REFILL LOG (onglet Alertes) ══ */
+.refill-log-item{padding:7px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px}
 .refill-log-item:last-child{border-bottom:none}
-.refill-log-who{color:var(--accent);font-weight:600}
+.refill-log-who{color:var(--purple);font-weight:600}
 .refill-log-when{color:var(--muted);font-size:10px}
 
 /* ══ WORKSPACE MANAGER ══ */
@@ -631,10 +643,18 @@ body.light #techView{background:var(--bg)}
   <div class="two-col">
     <div class="machines-grid" id="machinesGrid"></div>
     <div class="sidebar">
-      <div class="panel"><div class="panel-title">Alertes récentes</div><div id="alertsList"><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune alerte</div></div></div>
+      <div class="panel">
+        <div class="panel-title">
+          📋 Historique des interventions
+          <span class="panel-title-sub">3 derniers mois</span>
+        </div>
+        <div id="alertsList" style="max-height:420px;overflow-y:auto">
+          <div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Chargement…</div>
+        </div>
+      </div>
       <div class="panel"><div class="panel-title">Log MQTT</div><div class="log-box" id="logBox"><div class="ll in">$ dashboard prêt</div></div></div>
-      <div class="panel"><div class="panel-title">Tournées urgentes</div><div id="tourneesPanel"><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune tournée urgente</div></div></div>
     </div>
+    <div id="tourneesPanel" style="display:none"></div>
   </div>
 </div>
 
@@ -1014,9 +1034,9 @@ async function loadAll(){
       document.getElementById('v_thresh_crit').textContent=threshCrit;
       document.getElementById('v_thresh_warn').textContent=threshWarn;
     }
-    // Charger l'historique
-    const hRes=await authFetch('/api/history?limit=50');
-    if(hRes&&hRes.ok){refillLog=await hRes.json();}
+    // Charger l'historique (3 mois, 500 entrées max)
+    const hRes=await authFetch('/api/history?limit=500');
+    if(hRes&&hRes.ok){refillLog=await hRes.json();renderSidebarHistory();}
     // Charger les techniciens (pour les badges sur les cartes + assignation)
     if(currentRole==='admin'||currentRole==='superadmin'){
       const tRes=await authFetch('/api/workspaces/techs');
@@ -1497,7 +1517,7 @@ function badgeHtml(s){
 }
 
 // ══ RENDER ALL ══
-function renderAll(){renderMachines();updateStats();renderRefillLog();}
+function renderAll(){renderMachines();updateStats();renderSidebarHistory();renderRefillLog();}
 
 // ══ MACHINES ══
 function renderMachines(){
@@ -1611,21 +1631,80 @@ function deleteMachine(id){
     },3000);
   }
 }
+function histTypeLabel(type,detail){
+  const ing={cafe:'Café',sucre:'Sucre',lait:'Lait',choco:'Chocolat',eau:'Eau',gobelets:'Gobelets'};
+  if(type==='refill_all')return '✓ Tout rempli';
+  if(type==='refill_eau')return '💧 Eau remplie';
+  if(type==='refill_ing')return '↺ '+(detail?.label||ing[detail?.ing]||'Ingrédient')+' rempli';
+  if(type==='create')return '➕ Machine créée';
+  if(type==='delete')return '🗑 Machine supprimée';
+  if(type==='edit')return '✏ Machine modifiée';
+  if(type==='gps_update')return '📍 GPS mis à jour';
+  if(type==='all')return '✓ Tout rempli';
+  if(type==='eau')return '💧 Eau remplie';
+  return type;
+}
+function histDotColor(type){
+  if(type==='refill_all'||type==='all')return 'var(--green)';
+  if(type==='refill_eau'||type==='eau')return '#60c3f9';
+  if(type==='refill_ing')return 'var(--accent)';
+  if(type==='delete')return 'var(--red)';
+  if(type==='create')return 'var(--green)';
+  if(type==='edit'||type==='gps_update')return 'var(--amber)';
+  return 'var(--muted)';
+}
 function logRefill(machineId,type){
   const m=machines[machineId];
-  const who=currentRole==='superadmin'?'Super Admin':currentRole==='admin'?'Admin':'Technicien';
-  refillLog.unshift({machineId,machineName:m?m.name:machineId,type,who,ts:Date.now()});
-  if(refillLog.length>100)refillLog.pop();
-  renderRefillLog();
+  const who=currentUsername||(currentRole==='superadmin'?'Super Admin':currentRole==='admin'?'Admin':'Technicien');
+  // Ajouter en tête (format local compatible avec le rendu unifié)
+  refillLog.unshift({machine_name:m?m.name:machineId,machine_id:machineId,type,done_by:who,done_at:new Date().toISOString(),detail:{}});
+  renderSidebarHistory();
+}
+function renderSidebarHistory(){
+  const el=document.getElementById('alertsList');
+  if(!el)return;
+  if(!refillLog.length){
+    const empty='<div style="font-size:11px;font-family:var(--mono);color:var(--muted);padding:4px 0">Aucune intervention enregistrée</div>';
+    el.innerHTML=empty;
+    const ah=document.getElementById('alertHistoire');if(ah)ah.innerHTML=empty;
+    return;
+  }
+  const html=refillLog.map(r=>{
+    // Compatibilité format serveur (done_by/done_at/machine_name) ET format local
+    const who=r.done_by||r.who||'—';
+    const name=r.machine_name||r.machineName||r.machine_id||'—';
+    const dt=r.done_at?new Date(r.done_at):(r.ts?new Date(r.ts):null);
+    const when=dt?dt.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const type=r.type||'';
+    const detail=r.detail||{};
+    const label=histTypeLabel(type,detail);
+    const dot=histDotColor(type);
+    return `<div class="hist-item">
+      <div class="hist-dot" style="background:${dot}"></div>
+      <div class="hist-body">
+        <div class="hist-type">${label}</div>
+        <div class="hist-machine">📟 ${escHtml(name)}</div>
+        <div class="hist-who">👤 ${escHtml(who)}</div>
+        <div class="hist-when">🕐 ${when}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=html;
+  const ah=document.getElementById('alertHistoire');if(ah)ah.innerHTML=html;
 }
 function renderRefillLog(){
+  // Onglet "Alertes à télégramme" — même données, format liste
   const el=document.getElementById('refillLogList');
   if(!el)return;
   if(!refillLog.length){el.innerHTML='<div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucun remplissage enregistré</div>';return;}
-  el.innerHTML=refillLog.slice(0,30).map(r=>`<div class="refill-log-item">
-    <span class="refill-log-who">${r.who}</span> — <b>${r.machineName}</b> — ${r.type==='all'?'✓ Tout rempli':'💧 Eau remplie'}<br>
-    <span class="refill-log-when">${new Date(r.ts).toLocaleString('fr-FR')}</span>
-  </div>`).join('');
+  el.innerHTML=refillLog.slice(0,50).map(r=>{
+    const who=r.done_by||r.who||'—';
+    const name=r.machine_name||r.machineName||'—';
+    const dt=r.done_at?new Date(r.done_at):(r.ts?new Date(r.ts):null);
+    const when=dt?dt.toLocaleString('fr-FR'):'—';
+    const label=histTypeLabel(r.type||'',r.detail||{});
+    return `<div class="refill-log-item"><span class="refill-log-who">👤 ${escHtml(who)}</span> — <b>${escHtml(name)}</b> — ${label}<br><span class="refill-log-when">🕐 ${when}</span></div>`;
+  }).join('');
 }
 function refillAll(id){
   const m=machines[id];
@@ -2230,11 +2309,11 @@ function renderTech(){
   document.getElementById('techCards').innerHTML=sortedList.map((m,i)=>{
     const s=st(m);const c=calcIng(m);
     const visited=techVisited.has(m.id);
-    const sc=s==='crit'?'#ef4444':s==='warn'?'#f59e0b':s==='ok'?'#3ecf8e':'#4a5272';
-    const numBg=s==='crit'?'rgba(239,68,68,.12)':s==='warn'?'rgba(245,158,11,.1)':s==='ok'?'rgba(62,207,142,.1)':'rgba(74,82,114,.1)';
-    const numBd=s==='crit'?'rgba(239,68,68,.3)':s==='warn'?'rgba(245,158,11,.25)':s==='ok'?'rgba(62,207,142,.25)':'rgba(74,82,114,.2)';
-    const badgeCls=s==='crit'?'b-crit':s==='warn'?'b-warn':s==='ok'?'b-ok':'b-off';
-    const badgeTxt=s==='crit'?'🔴 URGENT':s==='warn'?'⚠ À REMPLIR':s==='ok'?'✓ OK':'○ HORS LIGNE';
+    const sc=visited?'#3ecf8e':s==='crit'?'#ef4444':s==='warn'?'#f59e0b':s==='ok'?'#3ecf8e':'#4a5272';
+    const numBg=visited?'rgba(62,207,142,.15)':s==='crit'?'rgba(239,68,68,.12)':s==='warn'?'rgba(245,158,11,.1)':s==='ok'?'rgba(62,207,142,.1)':'rgba(74,82,114,.1)';
+    const numBd=visited?'rgba(62,207,142,.4)':s==='crit'?'rgba(239,68,68,.3)':s==='warn'?'rgba(245,158,11,.25)':s==='ok'?'rgba(62,207,142,.25)':'rgba(74,82,114,.2)';
+    const badgeCls=visited?'b-ok':s==='crit'?'b-crit':s==='warn'?'b-warn':s==='ok'?'b-ok':'b-off';
+    const badgeTxt=visited?'✅ FAIT':s==='crit'?'🔴 URGENT':s==='warn'?'⚠ À REMPLIR':s==='ok'?'✓ OK':'○ HORS LIGNE';
     const rings=[
       {icon:'☕',label:'Café',    pct:c.cafePct, water:false,ing:'cafe'},
       {icon:'🍬',label:'Sucre',   pct:c.sucrePct,water:false,ing:'sucre'},
@@ -2250,7 +2329,7 @@ function renderTech(){
     // Boutons remplissage par ingrédient (seulement ceux < 100%)
     const rfBtns=rings.filter(r=>r.pct<100).map(r=>`<button class="tc-rfbtn ${rfCls(r.pct,r.water)}" onclick="refillIng('${m.id}','${r.ing}')">${r.icon} ${r.label} ${r.pct}% ↺</button>`).join('');
     return `<div class="tc ${s}${visited?' tc-done':''}" style="animation-delay:${i*0.06}s">
-      <div class="tc-strip" style="background:${visited?'#2a3048':sc}"></div>
+      <div class="tc-strip" style="background:${sc}"></div>
       <div class="tc-content">
         <div class="tc-head">
           <div class="tc-num" style="color:${sc};border-color:${numBd};background:${numBg}">#${i+1}</div>
@@ -2326,11 +2405,13 @@ async function sendTelegramAlerts(crCount,urgentMachines){
 // ══ ALERTES ══
 function updateStats(){}
 function addAlert(text,level='warn'){
-  const a={text,level,time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
-  alerts.unshift(a);if(alerts.length>20)alerts.pop();
-  const html=alerts.map(a=>`<div class="alert-item"><div class="adot" style="background:${a.level==='crit'?'var(--red)':a.level==='info'?'var(--green)':'var(--amber)'}"></div><div><div class="atext">${a.text}</div><div class="atime">${a.time}</div></div></div>`).join('');
-  document.getElementById('alertsList').innerHTML=html||'<div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune alerte</div>';
-  document.getElementById('alertHistoire').innerHTML=html||'<div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucune alerte</div>';
+  // Ajouter à refillLog comme entrée système et re-rendre la sidebar
+  const who=currentUsername||(currentRole==='admin'?'Admin':'Système');
+  refillLog.unshift({machine_name:text,machine_id:'',type:level==='info'?'create':level==='crit'?'delete':'edit',done_by:who,done_at:new Date().toISOString(),detail:{}});
+  renderSidebarHistory();
+  // Compatibilité onglet Alertes (si présent)
+  const el=document.getElementById('alertHistoire');
+  if(el) renderSidebarHistory();
 }
 function log(txt,type=''){const b=document.getElementById('logBox');const d=document.createElement('div');d.className='ll '+type;d.textContent='$ '+txt;b.appendChild(d);b.scrollTop=b.scrollHeight;}
 function setNdot(cls,txt){document.getElementById('ndot').className='ndot '+cls;document.getElementById('nTxt').textContent=txt;}
