@@ -443,18 +443,62 @@ body.light #techView{background:var(--bg)}
       <div class="stp" id="stp4"><div class="stp-n">4</div><span class="stp-l">Eau & GPS</span></div>
     </div>
     <div class="fsec active" id="fsec1">
-      <div class="sec-icon">🏪</div><div class="sec-title">Identité de la machine</div>
+      <div class="sec-icon">🏪</div><div class="sec-title">Identité &amp; Localisation</div>
       <div class="sec-desc">Ces infos apparaîtront dans le dashboard et sur la carte.</div>
-      <div class="field"><label>Nom de la machine</label><input type="text" id="pName" placeholder="ex: Marseille Centre, Aéroport T2…"><div class="err-msg" id="eN">Champ requis</div></div>
-      <div class="field"><label>Identifiant unique (ID)</label><input type="text" id="pId" placeholder="ex: necta_001"><div class="err-msg" id="eI">Champ requis</div></div>
-      <div class="field"><label>Lieu / Adresse courte</label><input type="text" id="pLieu" placeholder="ex: 13001, Zone Industrielle…"></div>
+      <div class="field"><label>Nom de la machine</label><input type="text" id="pName" placeholder="ex: GARGES CENTRE, Aéroport T2…"><div class="err-msg" id="eN">Champ requis</div></div>
+      <div class="field"><label>Identifiant unique (ID)</label><input type="text" id="pId" placeholder="ex: GARGES1"><div class="err-msg" id="eI">Champ requis</div></div>
+
+      <div style="font-size:10px;font-family:var(--mono);color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:4px 0 8px">📍 Adresse</div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <!-- Barre de recherche autocomplete -->
+        <div>
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Rechercher une adresse</div>
+          <div class="addr-wrap">
+            <input class="cfg-in" id="pAddrSearch" placeholder="ex: 165 rue de la République Drancy" style="margin:0" autocomplete="off"
+              oninput="onAddrInput(this.value,'portal')" onkeydown="onAddrKey(event,'portal')"/>
+            <div id="pAddrDropdown" class="addr-dropdown" style="display:none"></div>
+          </div>
+          <div id="pAddrFoundBadge" style="display:none;font-family:var(--mono);font-size:11px;margin-top:5px;padding:6px 10px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);border-radius:6px;color:var(--green)"></div>
+        </div>
+        <!-- Champs détaillés -->
+        <div style="display:flex;gap:8px">
+          <div style="flex:0 0 100px">
+            <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Code postal</div>
+            <input class="cfg-in" id="pCp" placeholder="93120" style="margin:0"/>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Ville</div>
+            <input class="cfg-in" id="pVille" placeholder="Garges-lès-Gonesse" style="margin:0"/>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Numéro + Rue</div>
+          <input class="cfg-in" id="pRue" placeholder="16 rue de l'Antenne" style="margin:0"/>
+        </div>
+        <div>
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Lieu-dit / Localisation précise (optionnel)</div>
+          <input class="cfg-in" id="pLieuDit" placeholder="ex: Résidence Les Acacias, Hall B, ZI Nord…" style="margin:0"/>
+        </div>
+        <!-- Mini carte draggable -->
+        <div id="pMap" style="display:none;height:200px;border-radius:8px;border:1px solid var(--border);overflow:hidden"></div>
+        <div id="pMapHint" style="display:none;font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 0">☝ Faites glisser le marqueur ou cliquez sur la carte pour ajuster</div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1">
+            <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Latitude</div>
+            <input class="cfg-in" id="pLat" type="number" step="0.000001" placeholder="48.973600" style="margin:0"/>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Longitude</div>
+            <input class="cfg-in" id="pLng" type="number" step="0.000001" placeholder="2.402800" style="margin:0"/>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="fsec" id="fsec2">
       <div class="sec-icon">📶</div><div class="sec-title">Réseau WiFi du lieu</div>
       <div class="sec-desc">WiFi de l'établissement où cette machine est installée.</div>
       <div class="field"><label>Nom du réseau (SSID)</label><input type="text" id="pSsid" placeholder="Nom du WiFi"><div class="err-msg" id="eS">Champ requis</div></div>
       <div class="field"><label>Mot de passe WiFi</label><input type="password" id="pPass" placeholder="Vide si réseau ouvert"></div>
-      <div class="field"><label>Adresse complète (pour GPS)</label><input type="text" id="pAdresse" placeholder="ex: 15 rue de la Paix, 13001 Marseille"></div>
     </div>
     <div class="fsec" id="fsec3">
       <div class="sec-icon">☕</div><div class="sec-title">Remplissage initial des ingrédients</div>
@@ -1161,12 +1205,21 @@ function pGoNext(){
     document.getElementById('pBack').style.display='';
     if(pStep===4){document.getElementById('pNext').textContent='✓ Enregistrer';document.getElementById('pNext').classList.add('green');}
   } else {
-    const adresse=document.getElementById('pAdresse').value.trim();
+    const rue=document.getElementById('pRue').value.trim();
+    const cp=document.getElementById('pCp').value.trim();
+    const ville=document.getElementById('pVille').value.trim();
+    const lieuDit=document.getElementById('pLieuDit').value.trim();
+    const adresse=[rue,cp,ville].filter(Boolean).join(', ')||'—';
+    const latRaw=parseFloat(document.getElementById('pLat').value);
+    const lngRaw=parseFloat(document.getElementById('pLng').value);
+    const lat=isNaN(latRaw)?DEFAULT_COORDS[0]+(Math.random()-.5)*.05:latRaw;
+    const lng=isNaN(lngRaw)?DEFAULT_COORDS[1]+(Math.random()-.5)*.05:lngRaw;
     const m={
       id:document.getElementById('pId').value.trim(),
       name:document.getElementById('pName').value.trim(),
-      lieu:document.getElementById('pLieu').value.trim()||'—',
+      lieu:lieuDit||'—',
       adresse:adresse,
+      rue:rue,cp:cp,ville:ville,lieuDit:lieuDit,
       wifi:document.getElementById('pSsid').value.trim(),
       bac:pBac,
       ing_cafe_init:pIng.cafe,dose_cafe:pIng.dose_cafe,
@@ -1178,14 +1231,15 @@ function pGoNext(){
       history:genHistory(),
       fillTime:Date.now(),
       ts:Date.now()-Math.random()*60000,
-      lat:DEFAULT_COORDS[0]+(Math.random()-.5)*.05,
-      lng:DEFAULT_COORDS[1]+(Math.random()-.5)*.05,
+      lat:lat,lng:lng,
     };
     machines[m.id]=m;
     saveAll();
     logIntervention(m.id,m.name,'create',{});
     document.getElementById('pSum').innerHTML=[
-      ['Machine',m.name],['ID',m.id],['Lieu',m.lieu],
+      ['Machine',m.name],['ID',m.id],
+      ['Adresse',m.adresse||'—'],
+      ...(m.lieuDit?[['Lieu-dit',m.lieuDit]]:[]),
       ['WiFi',m.wifi],['Bac d\'eau',m.bac+'L'],
       ['Café',m.ing_cafe_init+'g'],['Sucre',m.ing_sucre_init+'g'],
       ['Lait',m.ing_lait_init+'g'],['Chocolat',m.ing_choco_init+'g'],
@@ -1219,7 +1273,12 @@ function resetPortal(){
   document.getElementById('fsecOk').classList.remove('active');
   document.getElementById('pNav').style.display='';document.getElementById('pBack').style.display='none';
   document.getElementById('pNext').textContent='Suivant →';document.getElementById('pNext').classList.remove('green');
-  ['pName','pId','pLieu','pSsid','pPass','pAdresse'].forEach(id=>document.getElementById(id).value='');
+  ['pName','pId','pSsid','pPass','pAddrSearch','pCp','pVille','pRue','pLieuDit','pLat','pLng'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('pAddrFoundBadge').style.display='none';
+  document.getElementById('pMap').style.display='none';
+  document.getElementById('pMapHint').style.display='none';
+  if(_portalMap){_portalMap.remove();_portalMap=null;_portalMarker=null;}
+  closeAddrDropdown('portal');
 }
 function ouvrirDashboard(){document.getElementById('portal').style.display='none';document.getElementById('dashboard').style.display='block';renderAll();}
 function retourConfig(){resetPortal();document.getElementById('portal').style.display='flex';document.getElementById('dashboard').style.display='none';if(Object.keys(machines).length>0)document.getElementById('pBackDash').style.display='block';}
@@ -1526,22 +1585,27 @@ function setTechSort(mode,btn){
 }
 
 // ══ AUTOCOMPLETE ADRESSE (BAN) ══
-let _addrDebounce=null,_addrFocusIdx=-1;
-function onAddrInput(val){
+// Table des IDs par contexte : 'edit' = modal édition, 'portal' = wizard nouvelle machine
+const ADDR_CTX={
+  edit:{search:'addrSearch',dropdown:'addrDropdown',badge:'addrFoundBadge',cp:'editMachineCp',ville:'editMachineVille',rue:'editMachineRue',lat:'editMachineLat',lng:'editMachineLng'},
+  portal:{search:'pAddrSearch',dropdown:'pAddrDropdown',badge:'pAddrFoundBadge',cp:'pCp',ville:'pVille',rue:'pRue',lat:'pLat',lng:'pLng'}
+};
+let _addrDebounce=null,_addrFocusIdx=-1,_addrCtx='edit';
+function onAddrInput(val,ctx){
+  if(ctx)_addrCtx=ctx;
   clearTimeout(_addrDebounce);
   _addrFocusIdx=-1;
-  // Attendre au moins 4 caractères ET 400ms de pause pour avoir le numéro complet
-  if(val.length<4){closeAddrDropdown();return;}
-  _addrDebounce=setTimeout(()=>fetchAddrSuggestions(val),400);
+  if(val.length<4){closeAddrDropdown(_addrCtx);return;}
+  _addrDebounce=setTimeout(()=>fetchAddrSuggestions(val,_addrCtx),400);
 }
-async function fetchAddrSuggestions(q){
-  const dd=document.getElementById('addrDropdown');
+async function fetchAddrSuggestions(q,ctx){
+  const ids=ADDR_CTX[ctx]||ADDR_CTX.edit;
+  const dd=document.getElementById(ids.dropdown);
   dd.innerHTML='<div class="addr-searching">🔍 Recherche…</div>';
   dd.style.display='block';
   try{
-    const cp=document.getElementById('editMachineCp').value.trim();
-    const ville=document.getElementById('editMachineVille').value.trim();
-    // Ajouter la ville à la requête si disponible pour plus de précision
+    const cp=document.getElementById(ids.cp).value.trim();
+    const ville=document.getElementById(ids.ville).value.trim();
     const fullQ=ville&&!q.toLowerCase().includes(ville.toLowerCase())?q+' '+ville:q;
     let url=`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(fullQ)}&limit=7&autocomplete=1`;
     if(cp) url+=`&postcode=${encodeURIComponent(cp)}`;
@@ -1549,16 +1613,11 @@ async function fetchAddrSuggestions(q){
     const d=await r.json();
     const feats=d?.features||[];
     if(!feats.length){dd.innerHTML='<div class="addr-searching">Aucun résultat — essayez d\'ajouter la ville</div>';return;}
-
-    // Extraire le numéro saisi pour détecter les correspondances
     const numSaisi=(q.match(/^\d+/)||[])[0];
-
     dd.innerHTML=feats.map((f,i)=>{
       const p=f.properties;
-      const coords=f.geometry.coordinates; // [lng, lat]
-      // Construction sûre du champ rue
+      const coords=f.geometry.coordinates;
       const rueVal=p.housenumber&&p.street ? p.housenumber+' '+p.street : (p.name||'');
-      // Indicateur de précision
       let precBadge='';
       if(p.type==='housenumber'){
         const numTrouve=(p.housenumber||'').toString();
@@ -1578,7 +1637,7 @@ async function fetchAddrSuggestions(q){
         data-label="${(p.label||'').replace(/"/g,'&quot;')}"
         data-rue="${rueVal.replace(/"/g,'&quot;')}"
         data-cp="${p.postcode||''}" data-ville="${p.city||''}"
-        data-type="${p.type||''}"
+        data-type="${p.type||''}" data-ctx="${ctx}"
         onclick="selectAddrOpt(this)">
         <div class="addr-opt-label">${p.label||p.name}</div>
         <div class="addr-opt-detail">${precBadge}</div>
@@ -1586,28 +1645,32 @@ async function fetchAddrSuggestions(q){
     }).join('');
   }catch(e){dd.innerHTML='<div class="addr-searching" style="color:var(--red)">Erreur réseau</div>';}
 }
-function onAddrKey(e){
-  const dd=document.getElementById('addrDropdown');
+function onAddrKey(e,ctx){
+  if(ctx)_addrCtx=ctx;
+  const ids=ADDR_CTX[_addrCtx]||ADDR_CTX.edit;
+  const dd=document.getElementById(ids.dropdown);
   if(dd.style.display==='none')return;
   const opts=dd.querySelectorAll('.addr-opt');
   if(!opts.length)return;
   if(e.key==='ArrowDown'){e.preventDefault();_addrFocusIdx=Math.min(_addrFocusIdx+1,opts.length-1);opts.forEach((o,i)=>o.classList.toggle('focused',i===_addrFocusIdx));}
   else if(e.key==='ArrowUp'){e.preventDefault();_addrFocusIdx=Math.max(_addrFocusIdx-1,0);opts.forEach((o,i)=>o.classList.toggle('focused',i===_addrFocusIdx));}
   else if(e.key==='Enter'&&_addrFocusIdx>=0){e.preventDefault();selectAddrOpt(opts[_addrFocusIdx]);}
-  else if(e.key==='Escape'){closeAddrDropdown();}
+  else if(e.key==='Escape'){closeAddrDropdown(_addrCtx);}
 }
 function selectAddrOpt(el){
+  const ctx=el.dataset.ctx||_addrCtx||'edit';
+  const ids=ADDR_CTX[ctx]||ADDR_CTX.edit;
   const lat=parseFloat(el.dataset.lat),lng=parseFloat(el.dataset.lng);
   const type=el.dataset.type||'';
   const isExact=type==='housenumber';
   const isStreet=type==='street';
-  document.getElementById('addrSearch').value=el.dataset.label;
-  document.getElementById('editMachineRue').value=el.dataset.rue;
-  document.getElementById('editMachineCp').value=el.dataset.cp;
-  document.getElementById('editMachineVille').value=el.dataset.ville;
-  document.getElementById('editMachineLat').value=lat.toFixed(6);
-  document.getElementById('editMachineLng').value=lng.toFixed(6);
-  const badge=document.getElementById('addrFoundBadge');
+  document.getElementById(ids.search).value=el.dataset.label;
+  document.getElementById(ids.rue).value=el.dataset.rue;
+  document.getElementById(ids.cp).value=el.dataset.cp;
+  document.getElementById(ids.ville).value=el.dataset.ville;
+  document.getElementById(ids.lat).value=lat.toFixed(6);
+  document.getElementById(ids.lng).value=lng.toFixed(6);
+  const badge=document.getElementById(ids.badge);
   badge.style.display='block';
   if(isExact){
     badge.innerHTML=`✅ <b>${el.dataset.label}</b> — Position exacte`;
@@ -1619,17 +1682,25 @@ function selectAddrOpt(el){
     badge.innerHTML=`📍 <b>${el.dataset.label}</b>`;
     badge.style.cssText='display:block;font-family:var(--mono);font-size:11px;margin-top:5px;padding:6px 10px;background:rgba(79,156,249,.08);border:1px solid rgba(79,156,249,.2);border-radius:6px;color:var(--accent)';
   }
-  closeAddrDropdown();
-  initEditMap(lat,lng);
-  // Si numéro non trouvé : zoomer plus pour faciliter le drag
-  if(!isExact&&_editMap)setTimeout(()=>_editMap.setZoom(18),200);
+  closeAddrDropdown(ctx);
+  if(ctx==='portal'){
+    initPortalMap(lat,lng);
+    if(!isExact&&_portalMap)setTimeout(()=>_portalMap.setZoom(18),200);
+  }else{
+    initEditMap(lat,lng);
+    if(!isExact&&_editMap)setTimeout(()=>_editMap.setZoom(18),200);
+  }
 }
-function closeAddrDropdown(){
-  document.getElementById('addrDropdown').style.display='none';
+function closeAddrDropdown(ctx){
+  const ids=ADDR_CTX[ctx||_addrCtx||'edit']||ADDR_CTX.edit;
+  document.getElementById(ids.dropdown).style.display='none';
 }
-// Fermer le dropdown si clic ailleurs
+// Fermer les dropdowns si clic ailleurs
 document.addEventListener('click',e=>{
-  if(!e.target.closest('.addr-wrap'))closeAddrDropdown();
+  if(!e.target.closest('.addr-wrap')){
+    closeAddrDropdown('edit');
+    closeAddrDropdown('portal');
+  }
 });
 
 // ══ JE SUIS ICI (technicien sur place) ══
@@ -1667,7 +1738,7 @@ function openEditMachine(id){
   document.getElementById('editMachineLng').value=m.lng||'';
   document.getElementById('editMachineBac').value=m.bac||20;
   document.getElementById('editMachineDoseCafe').value=m.dose_cafe||7;
-  closeAddrDropdown();
+  closeAddrDropdown('edit');
   // Afficher la carte si des coordonnées existent
   if(m.lat&&m.lng){
     setTimeout(()=>initEditMap(m.lat,m.lng),200);
@@ -1702,6 +1773,28 @@ function initEditMap(lat,lng){
     document.getElementById('editMachineLng').value=e.latlng.lng.toFixed(6);
   });
   setTimeout(()=>_editMap&&_editMap.invalidateSize(),150);
+}
+// Mini-carte draggable pour le wizard "nouvelle machine"
+let _portalMap=null,_portalMarker=null;
+function initPortalMap(lat,lng){
+  const mapEl=document.getElementById('pMap');
+  const hint=document.getElementById('pMapHint');
+  mapEl.style.display='block';hint.style.display='block';
+  if(_portalMap){_portalMap.remove();_portalMap=null;_portalMarker=null;}
+  _portalMap=L.map('pMap',{zoomControl:true,attributionControl:false}).setView([lat,lng],17);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(_portalMap);
+  _portalMarker=L.marker([lat,lng],{draggable:true,title:'Faites glisser pour ajuster'}).addTo(_portalMap);
+  _portalMarker.on('dragend',function(){
+    const p=_portalMarker.getLatLng();
+    document.getElementById('pLat').value=p.lat.toFixed(6);
+    document.getElementById('pLng').value=p.lng.toFixed(6);
+  });
+  _portalMap.on('click',function(e){
+    _portalMarker.setLatLng(e.latlng);
+    document.getElementById('pLat').value=e.latlng.lat.toFixed(6);
+    document.getElementById('pLng').value=e.latlng.lng.toFixed(6);
+  });
+  setTimeout(()=>_portalMap&&_portalMap.invalidateSize(),150);
 }
 function closeEditModal(){
   document.getElementById('editMachineModal').classList.remove('open');
