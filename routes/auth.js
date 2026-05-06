@@ -41,6 +41,7 @@ router.post('/login', async (req, res) => {
     token,
     role:        user.role,
     username:    user.username,
+    userId:      user.id,
     workspaceId: user.workspace_id
   });
 });

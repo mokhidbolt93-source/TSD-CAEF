@@ -382,6 +382,38 @@ body.light #techView{background:var(--bg)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ld-spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;position:relative;z-index:1}
 .ld-text{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em;position:relative;z-index:1}
+/* ══ GESTION TECHNICIENS ══ */
+.tech-mgmt-section{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.tech-mgmt-label{font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;font-weight:700}
+.tech-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tech-row:last-child{border-bottom:none;padding-bottom:0}
+.tech-row-avatar{width:28px;height:28px;border-radius:50%;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.tech-row-name{flex:1;font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500}
+.tech-row-id{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:1px}
+.tech-row-btns{display:flex;gap:5px;flex-shrink:0}
+.tech-edit-btn{background:none;border:1px solid var(--border2);color:var(--muted);padding:4px 8px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:10px;transition:.15s}
+.tech-edit-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tech-del-btn{background:none;border:1px solid rgba(239,68,68,.25);color:rgba(239,68,68,.7);padding:4px 8px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:10px;transition:.15s}
+.tech-del-btn:hover{border-color:var(--red);color:var(--red)}
+.tech-inline-form{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-top:6px;display:none;animation:fadeUp .2s ease}
+.tech-inline-form.open{display:block}
+.tech-add-form{background:rgba(62,207,142,.04);border:1px solid rgba(62,207,142,.15);border-radius:8px;padding:10px;margin-top:8px;display:none;animation:fadeUp .2s ease}
+.tech-add-form.open{display:block}
+.tech-add-btn{width:100%;background:none;border:1px dashed rgba(62,207,142,.35);color:var(--green);padding:8px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s;margin-top:2px}
+.tech-add-btn:hover{background:rgba(62,207,142,.06)}
+.tech-save-btn{background:var(--green);color:#000;border:none;padding:7px 13px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.tech-save-btn:hover{opacity:.85}
+/* Badge technicien sur les cartes machines */
+.m-tech-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);color:var(--purple);font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;margin:1px}
+/* Checkboxes d'assignation dans la modal edit */
+.assign-tech-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:.12s}
+.assign-tech-item:last-child{border-bottom:none}
+.assign-tech-item:hover{color:var(--text)}
+.assign-tech-cb{width:16px;height:16px;accent-color:var(--purple);flex-shrink:0}
+.assign-tech-name{font-family:var(--mono);font-size:12px;color:var(--text)}
+/* Tech name in tech view */
+#techNamePill{font-family:var(--mono);font-size:11px;color:var(--purple);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:99px;padding:3px 10px;margin-left:6px}
+
 /* ══ PRINT ══ */
 @media print{
   #loginScreen,#wsView,nav,.tabs,.stats-bar,#techView,.modal-bg,#toastContainer,#notifBanner,.del-btn,.nbtn,button{display:none!important}
@@ -711,12 +743,15 @@ body.light #techView{background:var(--bg)}
     <div class="tech-header">
       <div class="tech-brand">
         <div class="tech-brand-text">NECTA <span>MONITOR</span></div>
-        <div class="tech-role-pill"><div class="tech-role-dot"></div>Mode Technicien</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <div class="tech-role-pill"><div class="tech-role-dot"></div>Mode Technicien</div>
+          <span id="techNamePill" style="display:none"></span>
+        </div>
       </div>
       <button class="tech-close" onclick="toggleTech()">✕ Fermer</button>
     </div>
     <div class="tech-summary">
-      <div class="ts-card"><div class="ts-v" id="ts-total" style="color:var(--text)">—</div><div class="ts-l">Machines</div></div>
+      <div class="ts-card"><div class="ts-v" id="ts-total" style="color:var(--text)">—</div><div class="ts-l" id="ts-total-label">Machines</div></div>
       <div class="ts-card"><div class="ts-v" id="ts-crit" style="color:var(--red)">—</div><div class="ts-l">Urgentes</div></div>
       <div class="ts-card"><div class="ts-v" id="ts-warn" style="color:var(--amber)">—</div><div class="ts-l">À remplir</div></div>
       <div class="ts-card"><div class="ts-v" id="ts-ok" style="color:var(--green)">—</div><div class="ts-l">OK</div></div>
@@ -733,17 +768,35 @@ body.light #techView{background:var(--bg)}
 
 <!-- MODAL COMPTES -->
 <div class="modal-bg" id="credentialsModal">
-  <div class="modal">
+  <div class="modal" style="max-width:480px">
     <h2>🔑 Gestion des comptes</h2>
-    <p>Modifiez les identifiants. Laissez le mot de passe vide pour le conserver.</p>
-    <div style="font-size:10px;font-family:var(--mono);color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Compte Admin</div>
-    <input class="cfg-in" id="newAdminUser" placeholder="Identifiant admin"/>
-    <input class="cfg-in" id="newAdminPass" type="password" placeholder="Nouveau mot de passe admin"/>
-    <div style="font-size:10px;font-family:var(--mono);color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 8px">Compte Technicien</div>
-    <input class="cfg-in" id="newTechUser" placeholder="Identifiant technicien"/>
-    <input class="cfg-in" id="newTechPass" type="password" placeholder="Nouveau mot de passe technicien"/>
-    <button class="cfg-btn" onclick="saveNewCredentials()" style="margin-top:6px">Enregistrer</button>
-    <br><button class="modal-close" onclick="document.getElementById('credentialsModal').classList.remove('open')">Annuler</button>
+
+    <!-- Section Admin -->
+    <div class="tech-mgmt-section" style="border-color:rgba(167,139,250,.2)">
+      <div class="tech-mgmt-label" style="color:var(--purple)">👤 Compte Admin — changer le mot de passe</div>
+      <input class="cfg-in" id="newAdminOldPass" type="password" placeholder="Mot de passe actuel"/>
+      <input class="cfg-in" id="newAdminPass" type="password" placeholder="Nouveau mot de passe"/>
+      <button class="tech-save-btn" style="width:100%;background:var(--purple);color:#fff" onclick="saveAdminPassword()">Mettre à jour le mot de passe</button>
+    </div>
+
+    <!-- Section Techniciens -->
+    <div class="tech-mgmt-section" style="border-color:rgba(245,158,11,.2)">
+      <div class="tech-mgmt-label" style="color:var(--amber)">🔧 Techniciens</div>
+      <div id="techMgmtList"><div style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:8px">Chargement…</div></div>
+      <!-- Formulaire ajout -->
+      <button class="tech-add-btn" onclick="toggleAddTechForm()">＋ Ajouter un technicien</button>
+      <div class="tech-add-form" id="addTechForm">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">Nouveau technicien</div>
+        <input class="cfg-in" id="newTechUsername" placeholder="Identifiant (ex: tech-pierre)" autocomplete="off"/>
+        <input class="cfg-in" id="newTechPassword" type="password" placeholder="Mot de passe (4 car. min)"/>
+        <div style="display:flex;gap:7px;margin-top:2px">
+          <button class="tech-save-btn" style="flex:1" onclick="addTech()">✓ Créer</button>
+          <button class="modal-close" style="margin:0" onclick="toggleAddTechForm()">Annuler</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="modal-close" onclick="document.getElementById('credentialsModal').classList.remove('open')">Fermer</button>
   </div>
 </div>
 
@@ -810,6 +863,15 @@ body.light #techView{background:var(--bg)}
     <input class="cfg-in" id="editMachineBac" type="number" min="5" max="50" placeholder="ex: 20"/>
     <div style="font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px">Dose café (g/espresso)</div>
     <input class="cfg-in" id="editMachineDoseCafe" type="number" min="1" max="20" placeholder="ex: 7"/>
+
+    <div id="editTechAssignWrap" style="display:none">
+      <div style="font-size:10px;font-family:var(--mono);color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px">🔧 Techniciens assignés</div>
+      <div id="editMachineTechAssign" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 12px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Chargement…</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Laissez tout décoché pour que tous les techniciens voient cette machine.</div>
+    </div>
+
     <button class="cfg-btn" onclick="saveEditMachine()" style="margin-top:10px">Enregistrer</button>
     <br><button class="modal-close" onclick="closeEditModal()">Annuler</button>
   </div>
@@ -891,6 +953,10 @@ const DEFAULT_COORDS=[43.2965,5.3698];
 // ══ API ══
 let authToken=localStorage.getItem('nectaToken')||'';
 let currentRole=null;
+let currentUserId=null;
+let currentUsername=null;
+let workspaceTechs=[]; // [{id,username}] — chargé depuis le serveur pour l'admin
+function decodeJwt(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){return{};}}
 
 async function authFetch(url,options={}){
   const res=await fetch(url,{
@@ -950,6 +1016,11 @@ async function loadAll(){
     // Charger l'historique
     const hRes=await authFetch('/api/history?limit=50');
     if(hRes&&hRes.ok){refillLog=await hRes.json();}
+    // Charger les techniciens (pour les badges sur les cartes + assignation)
+    if(currentRole==='admin'||currentRole==='superadmin'){
+      const tRes=await authFetch('/api/workspaces/techs');
+      if(tRes&&tRes.ok){workspaceTechs=await tRes.json();}
+    }
   }catch(e){console.error('loadAll error:',e);}
 }
 async function logIntervention(machine_id,machine_name,type,detail){
@@ -996,21 +1067,25 @@ function genHistory(){
 }
 
 // ══ AUTH (via API serveur) ══
-function _applyRole(role,workspaceName){
+function _applyRole(role,workspaceName,techName){
   const isAdmin=(role==='admin'||role==='superadmin');
-  const isTech=(role==='tech');
   document.getElementById('btnTech').style.display=isAdmin?'':'none';
   document.getElementById('btnAddMachine').style.display=isAdmin?'':'none';
   document.getElementById('btnMqtt').style.display=isAdmin?'':'none';
   document.getElementById('btnCredentials').style.display=isAdmin?'':'none';
   document.getElementById('btnClients').style.display='none';
+  const tag=document.getElementById('roleTag');
   if(role==='superadmin'||workspaceName){
-    const tag=document.getElementById('roleTag');
     tag.textContent=role==='superadmin'?'SUPER ADMIN':(isAdmin?'ADMIN':'TECH')+(workspaceName?' — '+workspaceName:'');
-    tag.className='role-badge '+(isAdmin?'role-admin':'role-tech');
   } else {
-    document.getElementById('roleTag').textContent=isAdmin?'ADMIN':'TECHNICIEN';
-    document.getElementById('roleTag').className='role-badge '+(isAdmin?'role-admin':'role-tech');
+    tag.textContent=isAdmin?'ADMIN':(techName?'TECH — '+techName:'TECHNICIEN');
+  }
+  tag.className='role-badge '+(isAdmin?'role-admin':'role-tech');
+  // Afficher le nom du tech dans la vue technicien
+  const pill=document.getElementById('techNamePill');
+  if(pill){
+    if(role==='tech'&&techName){pill.textContent='👤 '+techName;pill.style.display='';}
+    else{pill.style.display='none';}
   }
 }
 async function doLogin(){
@@ -1031,6 +1106,8 @@ async function doLogin(){
     const data=await res.json();
     authToken=data.token;
     currentRole=data.role;
+    currentUserId=data.userId||decodeJwt(data.token).userId||null;
+    currentUsername=data.username||null;
     activeWorkspaceId=data.workspaceId||null;
     localStorage.setItem('nectaToken',authToken);
     if(data.role==='superadmin')localStorage.setItem('nectaSuperToken',authToken);
@@ -1039,7 +1116,7 @@ async function doLogin(){
       await loadWorkspacesFromServer();
       renderWorkspaces();
     } else {
-      _applyRole(currentRole);
+      _applyRole(currentRole,null,currentUsername);
       await loadAll();
       ouvrirDashboard();
       if(currentRole==='tech'&&!techOpen)toggleTech();
@@ -1068,20 +1145,98 @@ function doLogout(){
   document.getElementById('loginErr').classList.remove('show');
   document.getElementById('loginPass').classList.remove('err');
 }
-function openCredentialsModal(){
-  document.getElementById('newAdminUser').value='';
+// ══ GESTION DES COMPTES ══
+async function openCredentialsModal(){
+  document.getElementById('newAdminOldPass').value='';
   document.getElementById('newAdminPass').value='';
-  document.getElementById('newTechUser').value='';
-  document.getElementById('newTechPass').value='';
+  document.getElementById('addTechForm').classList.remove('open');
   document.getElementById('credentialsModal').classList.add('open');
+  await loadTechs();
 }
-async function saveNewCredentials(){
-  const ap=document.getElementById('newAdminPass').value;
-  if(!ap){toast('Entrez votre nouveau mot de passe','warn');return;}
-  const res=await authFetch('/api/auth/change-password',{method:'POST',body:JSON.stringify({oldPassword:document.getElementById('newAdminUser').value,newPassword:ap})});
-  if(res&&res.ok){document.getElementById('credentialsModal').classList.remove('open');toast('Mot de passe mis à jour','success');}
+async function saveAdminPassword(){
+  const old=document.getElementById('newAdminOldPass').value;
+  const np=document.getElementById('newAdminPass').value;
+  if(!old||!np){toast('Remplissez les deux champs','warn');return;}
+  const res=await authFetch('/api/auth/change-password',{method:'POST',body:JSON.stringify({oldPassword:old,newPassword:np})});
+  if(res&&res.ok){document.getElementById('newAdminOldPass').value='';document.getElementById('newAdminPass').value='';toast('Mot de passe admin mis à jour ✓','success');}
   else{toast('Ancien mot de passe incorrect','error');}
 }
+async function loadTechs(){
+  const res=await authFetch('/api/workspaces/techs');
+  if(!res||!res.ok){document.getElementById('techMgmtList').innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--red);padding:4px">Erreur de chargement</div>';return;}
+  workspaceTechs=await res.json();
+  renderTechMgmtList();
+}
+function renderTechMgmtList(){
+  const el=document.getElementById('techMgmtList');
+  if(!workspaceTechs.length){el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:8px">Aucun technicien — ajoutez-en un ci-dessous</div>';return;}
+  el.innerHTML=workspaceTechs.map(t=>`
+    <div class="tech-row" id="techrow-${t.id}">
+      <div class="tech-row-avatar">👤</div>
+      <div style="flex:1">
+        <div class="tech-row-name">${escHtml(t.username)}</div>
+        <div class="tech-row-id">ID : ${t.id.slice(0,8)}…</div>
+      </div>
+      <div class="tech-row-btns">
+        <button class="tech-edit-btn" onclick="toggleTechEditForm('${t.id}')">✏ Modifier</button>
+        <button class="tech-del-btn" onclick="deleteTech('${t.id}','${escHtml(t.username)}')">🗑</button>
+      </div>
+    </div>
+    <div class="tech-inline-form" id="techedit-${t.id}">
+      <input class="cfg-in" id="tedit-name-${t.id}" value="${escHtml(t.username)}" placeholder="Identifiant" autocomplete="off"/>
+      <input class="cfg-in" id="tedit-pass-${t.id}" type="password" placeholder="Nouveau mot de passe (laisser vide = inchangé)"/>
+      <div style="display:flex;gap:7px;margin-top:4px">
+        <button class="tech-save-btn" style="flex:1" onclick="updateTech('${t.id}')">✓ Enregistrer</button>
+        <button class="modal-close" style="margin:0" onclick="toggleTechEditForm('${t.id}')">Annuler</button>
+      </div>
+    </div>
+  `).join('');
+}
+function toggleTechEditForm(id){
+  const el=document.getElementById('techedit-'+id);
+  if(el)el.classList.toggle('open');
+}
+function toggleAddTechForm(){
+  const f=document.getElementById('addTechForm');
+  f.classList.toggle('open');
+  if(f.classList.contains('open')){document.getElementById('newTechUsername').value='';document.getElementById('newTechPassword').value='';document.getElementById('newTechUsername').focus();}
+}
+async function addTech(){
+  const username=document.getElementById('newTechUsername').value.trim();
+  const password=document.getElementById('newTechPassword').value;
+  if(!username||!password){toast('Identifiant et mot de passe requis','warn');return;}
+  if(password.length<4){toast('Mot de passe trop court (4 car. min)','warn');return;}
+  const res=await authFetch('/api/workspaces/techs',{method:'POST',body:JSON.stringify({username,password})});
+  if(!res)return;
+  const data=await res.json();
+  if(!res.ok){toast(data.error||'Erreur','error');return;}
+  toast('Technicien "'+username+'" créé ✓','success');
+  toggleAddTechForm();
+  await loadTechs();
+}
+async function updateTech(id){
+  const username=document.getElementById('tedit-name-'+id).value.trim();
+  const password=document.getElementById('tedit-pass-'+id).value;
+  if(!username){toast('L\'identifiant est requis','warn');return;}
+  const body={username};
+  if(password)body.password=password;
+  const res=await authFetch('/api/workspaces/techs/'+id,{method:'PUT',body:JSON.stringify(body)});
+  if(!res)return;
+  const data=await res.json();
+  if(!res.ok){toast(data.error||'Erreur','error');return;}
+  toast('Technicien mis à jour ✓','success');
+  await loadTechs();
+}
+async function deleteTech(id,name){
+  if(!confirm('Supprimer le technicien "'+name+'" ?\nCette action est irréversible.'))return;
+  const res=await authFetch('/api/workspaces/techs/'+id,{method:'DELETE'});
+  if(!res)return;
+  if(!res.ok){const d=await res.json();toast(d.error||'Erreur','error');return;}
+  toast('Technicien supprimé','success');
+  workspaceTechs=workspaceTechs.filter(t=>t.id!==id);
+  renderTechMgmtList();
+}
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ══ WORKSPACES ══
 function renderWorkspaces(){
@@ -1369,6 +1524,7 @@ function renderMachines(){
       ${pred?`<div class="prediction">${pred}</div>`:''}
     </div>
     <div class="card-ca"><span style="color:var(--muted)">CA aujourd'hui</span><span class="ca-val">${ca.toFixed(2)} €</span></div>
+    ${(m.assignedTechs&&m.assignedTechs.length)?`<div style="padding:4px 12px 6px;display:flex;flex-wrap:wrap;gap:3px">${m.assignedTechs.map(tid=>{const t=workspaceTechs.find(x=>x.id===tid);return t?`<span class="m-tech-badge">🔧 ${escHtml(t.username)}</span>`:''}).join('')}</div>`:''}
     <div class="card-foot"><span>Vu il y a ${ago(m.ts)}</span><div><span>${c.totalV}</span> boissons/j</div></div>`;
     g.appendChild(d);
   });
@@ -1747,7 +1903,32 @@ function openEditMachine(id){
     document.getElementById('editMachineMap').style.display='none';
     document.getElementById('editMapHint').style.display='none';
   }
+  // Section techniciens assignés (admin seulement)
+  renderTechAssignSection(id);
   document.getElementById('editMachineModal').classList.add('open');
+}
+async function renderTechAssignSection(machineId){
+  const wrap=document.getElementById('editTechAssignWrap');
+  const container=document.getElementById('editMachineTechAssign');
+  // Charger les techs si pas encore fait
+  if(!workspaceTechs.length){
+    const res=await authFetch('/api/workspaces/techs');
+    if(res&&res.ok) workspaceTechs=await res.json();
+  }
+  if(!workspaceTechs.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  const m=machines[machineId];
+  const assigned=m?.assignedTechs||[];
+  container.innerHTML=workspaceTechs.map(t=>`
+    <label class="assign-tech-item" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <input type="checkbox" class="assign-tech-cb" data-tech-id="${t.id}" ${assigned.includes(t.id)?'checked':''} onchange="updateAssignCheckbox('${machineId}')"/>
+      <span class="assign-tech-name">👤 ${escHtml(t.username)}</span>
+    </label>
+  `).join('')+'<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px">Sans sélection = visible par tous les techniciens</div>';
+}
+function updateAssignCheckbox(machineId){
+  // Live update des assignedTechs dans l'objet machine (sauvegardé en cliquant Enregistrer)
+  // (pas besoin de faire autre chose ici)
 }
 let _editMap=null,_editMarker=null;
 function initEditMap(lat,lng){
@@ -1823,6 +2004,9 @@ function saveEditMachine(){
   m.bac=Math.min(50,Math.max(5,bac));
   const dose=parseInt(document.getElementById('editMachineDoseCafe').value)||7;
   m.dose_cafe=Math.min(20,Math.max(1,dose));
+  // Récupérer les techniciens assignés depuis les checkboxes
+  const cbs=document.querySelectorAll('#editMachineTechAssign .assign-tech-cb');
+  if(cbs.length){m.assignedTechs=[...cbs].filter(c=>c.checked).map(c=>c.dataset.techId);}
   saveAll();
   closeEditModal();
   toast('Machine mise à jour','success');
@@ -2004,15 +2188,19 @@ function rfCls(pct,isWater){
 }
 function renderTech(){
   // Récupérer et trier la liste
-  let allMachines=Object.values(machines);
+  // Pour un tech : filtrer par machines assignées (ou toutes si aucune assignation)
+  const allMachines=Object.values(machines);
+  const filteredMachines=(currentRole==='tech')
+    ? allMachines.filter(m=>!m.assignedTechs||!m.assignedTechs.length||m.assignedTechs.includes(currentUserId))
+    : allMachines;
   let mList;
   if(techSortMode==='gps'&&techRouteOrder.length){
-    // Ordre GPS : d'abord les machines dans la route, puis les autres
-    const ordered=techRouteOrder.map(id=>machines[id]).filter(Boolean);
-    const rest=allMachines.filter(m=>!techRouteOrder.includes(m.id));
+    // Ordre GPS : d'abord les machines dans la route (filtrées), puis les autres
+    const ordered=techRouteOrder.map(id=>machines[id]).filter(m=>m&&filteredMachines.includes(m));
+    const rest=filteredMachines.filter(m=>!techRouteOrder.includes(m.id));
     mList=[...ordered,...rest];
   } else {
-    mList=allMachines.sort((a,b)=>{const o={crit:0,warn:1,ok:2,off:3};return o[st(a)]-o[st(b)];});
+    mList=[...filteredMachines].sort((a,b)=>{const o={crit:0,warn:1,ok:2,off:3};return o[st(a)]-o[st(b)];});
   }
   // Séparer visitées / non visitées
   const notDone=mList.filter(m=>!techVisited.has(m.id));
@@ -2020,8 +2208,9 @@ function renderTech(){
   const sortedList=[...notDone,...done];
 
   const counts={crit:0,warn:0,ok:0,off:0};
-  allMachines.forEach(m=>counts[st(m)]++);
-  document.getElementById('ts-total').textContent=allMachines.length;
+  filteredMachines.forEach(m=>counts[st(m)]++);
+  document.getElementById('ts-total').textContent=filteredMachines.length;
+  document.getElementById('ts-total-label').textContent=(currentRole==='tech')?'Mes machines':'Machines';
   document.getElementById('ts-crit').textContent=counts.crit;
   document.getElementById('ts-warn').textContent=counts.warn;
   document.getElementById('ts-ok').textContent=counts.ok;
@@ -2202,25 +2391,24 @@ function connectMQTT(){
         res.json().then(cfg=>{
           // Récupère le rôle depuis le token stocké
           try{
-            const payload=JSON.parse(atob(authToken.split('.')[1]));
+            const payload=decodeJwt(authToken);
             currentRole=payload.role;
+            currentUserId=payload.userId||null;
+            currentUsername=payload.username||null;
             activeWorkspaceId=payload.workspaceId;
             if(currentRole==='superadmin'){
-              // Superadmin → affiche la liste des workspaces
               loadWorkspacesFromServer().then(()=>{
-                renderWorkspaces(); // masque loadingScreen + affiche wsView
+                renderWorkspaces();
               });
             } else {
-              // Admin ou tech → charge les données et affiche le dashboard
               loadAll().then(()=>{
                 document.getElementById('loadingScreen').style.display='none';
-                _applyRole(currentRole);
+                _applyRole(currentRole,null,currentUsername);
                 ouvrirDashboard();
                 if(currentRole==='tech')toggleTech();
               });
             }
           }catch(e){
-            // Token illisible → déconnexion
             doLogout();
           }
         });

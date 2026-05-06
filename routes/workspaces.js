@@ -151,4 +151,75 @@ router.post('/settings', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ══ GESTION DES TECHNICIENS (admin only) ══
+
+// GET /api/workspaces/techs  — liste les techniciens du workspace courant
+router.get('/techs', requireAuth, async (req, res) => {
+  if (req.user.role !== 'admin' && !req.user.isSuperAdmin) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, username, created_at')
+    .eq('workspace_id', req.user.workspaceId)
+    .eq('role', 'tech')
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// POST /api/workspaces/techs  — créer un nouveau technicien
+router.post('/techs', requireAuth, async (req, res) => {
+  if (req.user.role !== 'admin' && !req.user.isSuperAdmin) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+  const { username, password } = req.body;
+  if (!username || !password || password.length < 4) {
+    return res.status(400).json({ error: 'Identifiant et mot de passe (4 car. min) requis' });
+  }
+  const { data: existing } = await supabase.from('users').select('id').eq('username', username.trim()).maybeSingle();
+  if (existing) return res.status(409).json({ error: 'Identifiant déjà utilisé' });
+
+  const hash = await bcrypt.hash(password, 10);
+  const { data, error } = await supabase.from('users').insert({
+    workspace_id:  req.user.workspaceId,
+    username:      username.trim(),
+    password_hash: hash,
+    role:          'tech'
+  }).select('id, username').single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true, tech: data });
+});
+
+// PUT /api/workspaces/techs/:id  — modifier un technicien (nom et/ou mot de passe)
+router.put('/techs/:id', requireAuth, async (req, res) => {
+  if (req.user.role !== 'admin' && !req.user.isSuperAdmin) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+  const { data: tech } = await supabase.from('users').select('id').eq('id', req.params.id).eq('workspace_id', req.user.workspaceId).eq('role', 'tech').maybeSingle();
+  if (!tech) return res.status(404).json({ error: 'Technicien introuvable' });
+
+  const { username, password } = req.body;
+  const upd = {};
+  if (username) upd.username = username.trim();
+  if (password && password.length >= 4) upd.password_hash = await bcrypt.hash(password, 10);
+  if (!Object.keys(upd).length) return res.status(400).json({ error: 'Rien à modifier' });
+
+  const { error } = await supabase.from('users').update(upd).eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+// DELETE /api/workspaces/techs/:id  — supprimer un technicien
+router.delete('/techs/:id', requireAuth, async (req, res) => {
+  if (req.user.role !== 'admin' && !req.user.isSuperAdmin) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+  const { data: tech } = await supabase.from('users').select('id').eq('id', req.params.id).eq('workspace_id', req.user.workspaceId).eq('role', 'tech').maybeSingle();
+  if (!tech) return res.status(404).json({ error: 'Technicien introuvable' });
+
+  await supabase.from('users').delete().eq('id', req.params.id);
+  res.json({ ok: true });
+});
+
 module.exports = router;
