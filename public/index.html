@@ -282,7 +282,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 /* Modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:440px;max-width:92vw;animation:fadeUp .3s ease}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:440px;max-width:92vw;max-height:92vh;overflow-y:auto;animation:fadeUp .3s ease}
 .modal h2{font-size:15px;font-weight:700;margin-bottom:5px}
 .modal p{font-size:12px;color:var(--muted);margin-bottom:14px;font-family:var(--mono);line-height:1.6}
 .cfg-in{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-family:var(--mono);font-size:12px;margin-bottom:7px}
@@ -463,6 +463,9 @@ body.light #techView{background:var(--bg)}
 <div id="portal">
 <div class="p-wrap">
   <div class="p-header">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px" id="pHeaderBack">
+      <button onclick="ouvrirDashboard()" style="background:none;border:1px solid var(--border2);color:var(--muted2);padding:6px 14px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--text)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">← Retour au dashboard</button>
+    </div>
     <div class="wifi-badge"><div class="wifi-dot"></div>Connecté à NECTA-Config</div>
     <div class="p-logo">NECTA <span>MONITOR</span></div>
     <div class="p-tag">PORTAIL DE CONFIGURATION</div>
@@ -574,9 +577,7 @@ body.light #techView{background:var(--bg)}
       <button class="btn-next" id="pNext" onclick="pGoNext()">Suivant →</button>
     </div>
   </div>
-  <div id="pBackDash" style="display:none;text-align:center;margin-top:10px">
-    <button onclick="ouvrirDashboard()" style="background:none;border:1px solid var(--border2);color:var(--muted2);padding:7px 18px;border-radius:8px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">← Retour au dashboard</button>
-  </div>
+  <div id="pBackDash" style="display:none"></div>
   <div class="p-footer">NECTA Monitor v3.0 — ESP32-WROOM-32U</div>
 </div>
 </div>
