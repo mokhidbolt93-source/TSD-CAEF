@@ -1530,8 +1530,9 @@ let _addrDebounce=null,_addrFocusIdx=-1;
 function onAddrInput(val){
   clearTimeout(_addrDebounce);
   _addrFocusIdx=-1;
-  if(val.length<3){closeAddrDropdown();return;}
-  _addrDebounce=setTimeout(()=>fetchAddrSuggestions(val),280);
+  // Attendre au moins 4 caractères ET 400ms de pause pour avoir le numéro complet
+  if(val.length<4){closeAddrDropdown();return;}
+  _addrDebounce=setTimeout(()=>fetchAddrSuggestions(val),400);
 }
 async function fetchAddrSuggestions(q){
   const dd=document.getElementById('addrDropdown');
@@ -1539,23 +1540,48 @@ async function fetchAddrSuggestions(q){
   dd.style.display='block';
   try{
     const cp=document.getElementById('editMachineCp').value.trim();
-    let url=`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1`;
-    if(cp)url+=`&postcode=${encodeURIComponent(cp)}`;
+    const ville=document.getElementById('editMachineVille').value.trim();
+    // Ajouter la ville à la requête si disponible pour plus de précision
+    const fullQ=ville&&!q.toLowerCase().includes(ville.toLowerCase())?q+' '+ville:q;
+    let url=`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(fullQ)}&limit=7&autocomplete=1`;
+    if(cp) url+=`&postcode=${encodeURIComponent(cp)}`;
     const r=await fetch(url);
     const d=await r.json();
     const feats=d?.features||[];
-    if(!feats.length){dd.innerHTML='<div class="addr-searching">Aucun résultat</div>';return;}
+    if(!feats.length){dd.innerHTML='<div class="addr-searching">Aucun résultat — essayez d\'ajouter la ville</div>';return;}
+
+    // Extraire le numéro saisi pour détecter les correspondances
+    const numSaisi=(q.match(/^\d+/)||[])[0];
+
     dd.innerHTML=feats.map((f,i)=>{
       const p=f.properties;
       const coords=f.geometry.coordinates; // [lng, lat]
+      // Construction sûre du champ rue
+      const rueVal=p.housenumber&&p.street ? p.housenumber+' '+p.street : (p.name||'');
+      // Indicateur de précision
+      let precBadge='';
+      if(p.type==='housenumber'){
+        const numTrouve=(p.housenumber||'').toString();
+        if(numSaisi&&numTrouve===numSaisi)
+          precBadge='<span style="color:var(--green);font-weight:700">✓ Numéro exact</span>';
+        else if(numSaisi&&numTrouve!==numSaisi)
+          precBadge=`<span style="color:var(--amber)">⚠ Numéro trouvé : ${numTrouve} (vous avez saisi ${numSaisi})</span>`;
+        else
+          precBadge='<span style="color:var(--green)">✓ Adresse exacte</span>';
+      }else if(p.type==='street'){
+        precBadge='<span style="color:var(--amber)">→ Rue (numéro non trouvé dans la BAN)</span>';
+      }else if(p.type==='municipality'){
+        precBadge='<span style="color:var(--muted)">→ Ville uniquement</span>';
+      }
       return `<div class="addr-opt" data-idx="${i}"
         data-lat="${coords[1]}" data-lng="${coords[0]}"
         data-label="${(p.label||'').replace(/"/g,'&quot;')}"
-        data-rue="${((p.housenumber?p.housenumber+' ':'')+p.street||p.name||'').replace(/"/g,'&quot;')}"
+        data-rue="${rueVal.replace(/"/g,'&quot;')}"
         data-cp="${p.postcode||''}" data-ville="${p.city||''}"
+        data-type="${p.type||''}"
         onclick="selectAddrOpt(this)">
         <div class="addr-opt-label">${p.label||p.name}</div>
-        <div class="addr-opt-detail">${p.postcode||''} ${p.city||''} ${p.type==='housenumber'?'<span style="color:var(--green)">✓ Numéro exact</span>':p.type==='street'?'<span style="color:var(--amber)">→ Rue (sans numéro)</span>':''}</div>
+        <div class="addr-opt-detail">${precBadge}</div>
       </div>`;
     }).join('');
   }catch(e){dd.innerHTML='<div class="addr-searching" style="color:var(--red)">Erreur réseau</div>';}
@@ -1572,6 +1598,9 @@ function onAddrKey(e){
 }
 function selectAddrOpt(el){
   const lat=parseFloat(el.dataset.lat),lng=parseFloat(el.dataset.lng);
+  const type=el.dataset.type||'';
+  const isExact=type==='housenumber';
+  const isStreet=type==='street';
   document.getElementById('addrSearch').value=el.dataset.label;
   document.getElementById('editMachineRue').value=el.dataset.rue;
   document.getElementById('editMachineCp').value=el.dataset.cp;
@@ -1579,14 +1608,21 @@ function selectAddrOpt(el){
   document.getElementById('editMachineLat').value=lat.toFixed(6);
   document.getElementById('editMachineLng').value=lng.toFixed(6);
   const badge=document.getElementById('addrFoundBadge');
-  const isExact=el.querySelector('.addr-opt-detail span')?.style?.color==='var(--green)';
   badge.style.display='block';
-  badge.innerHTML=`✅ ${el.dataset.label}`;
-  badge.style.background=isExact?'rgba(62,207,142,.08)':'rgba(245,158,11,.08)';
-  badge.style.borderColor=isExact?'rgba(62,207,142,.2)':'rgba(245,158,11,.2)';
-  badge.style.color=isExact?'var(--green)':'var(--amber)';
+  if(isExact){
+    badge.innerHTML=`✅ <b>${el.dataset.label}</b> — Position exacte`;
+    badge.style.cssText='display:block;font-family:var(--mono);font-size:11px;margin-top:5px;padding:6px 10px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);border-radius:6px;color:var(--green)';
+  }else if(isStreet){
+    badge.innerHTML=`⚠ <b>${el.dataset.label}</b><br><span style="color:var(--muted)">Numéro non trouvé dans la BAN — déplacez le marqueur sur la carte vers le bon numéro</span>`;
+    badge.style.cssText='display:block;font-family:var(--mono);font-size:11px;margin-top:5px;padding:6px 10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;color:var(--amber)';
+  }else{
+    badge.innerHTML=`📍 <b>${el.dataset.label}</b>`;
+    badge.style.cssText='display:block;font-family:var(--mono);font-size:11px;margin-top:5px;padding:6px 10px;background:rgba(79,156,249,.08);border:1px solid rgba(79,156,249,.2);border-radius:6px;color:var(--accent)';
+  }
   closeAddrDropdown();
   initEditMap(lat,lng);
+  // Si numéro non trouvé : zoomer plus pour faciliter le drag
+  if(!isExact&&_editMap)setTimeout(()=>_editMap.setZoom(18),200);
 }
 function closeAddrDropdown(){
   document.getElementById('addrDropdown').style.display='none';
