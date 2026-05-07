@@ -151,6 +151,49 @@ router.post('/settings', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ══ POSITION GPS DES TECHNICIENS ══
+
+// POST /api/workspaces/tech-position  — technicien envoie sa position
+router.post('/tech-position', requireAuth, async (req, res) => {
+  if (req.user.role !== 'tech') return res.status(403).json({ error: 'Réservé aux techniciens' });
+  const { lat, lng } = req.body;
+  if (!lat || !lng) return res.status(400).json({ error: 'lat/lng requis' });
+
+  // Stocker dans interventions (type 'gps_position', machine_id = userId)
+  const { error } = await supabase.from('interventions').insert({
+    workspace_id: req.user.workspaceId,
+    machine_id:   req.user.userId,
+    machine_name: req.user.username,
+    type:         'gps_position',
+    detail:       { lat: parseFloat(lat), lng: parseFloat(lng) },
+    done_by:      req.user.username,
+    done_at:      new Date().toISOString()
+  });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+// GET /api/workspaces/tech-positions  — admin récupère les dernières positions
+router.get('/tech-positions', requireAuth, async (req, res) => {
+  if (req.user.role !== 'admin' && !req.user.isSuperAdmin) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+  const { data } = await supabase
+    .from('interventions')
+    .select('done_by, machine_id, detail, done_at')
+    .eq('workspace_id', req.user.workspaceId)
+    .eq('type', 'gps_position')
+    .order('done_at', { ascending: false })
+    .limit(200);
+
+  // Garder uniquement la dernière position par technicien
+  const latest = {};
+  (data || []).forEach(r => {
+    if (!latest[r.done_by]) latest[r.done_by] = r;
+  });
+  res.json(Object.values(latest));
+});
+
 // ══ GESTION DES TECHNICIENS (admin only) ══
 
 // GET /api/workspaces/techs  — liste les techniciens du workspace courant

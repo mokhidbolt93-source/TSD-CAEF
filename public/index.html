@@ -394,6 +394,40 @@ body.light #techView{background:var(--bg)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ld-spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;position:relative;z-index:1}
 .ld-text{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em;position:relative;z-index:1}
+/* ══ POSITION TECH ══ */
+.tech-pos-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:9px 14px;margin-bottom:14px}
+.tech-pos-info{display:flex;align-items:center;gap:7px}
+.tech-pos-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:.3s}
+.tech-pos-dot.active{background:var(--green);box-shadow:0 0 7px var(--green);animation:blink 2s infinite}
+.tech-pos-dot.sending{background:var(--accent);animation:blink .5s infinite}
+.tech-pos-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tech-pos-label b{color:var(--text)}
+.tech-pos-btn{background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.35);color:var(--green);padding:6px 13px;border-radius:7px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s;white-space:nowrap}
+.tech-pos-btn:hover{background:rgba(62,207,142,.2)}
+/* Notes par machine (vue tech) */
+.tc-notes-wrap{border-top:1px solid var(--border);padding:8px 0 4px;margin-top:2px}
+.tc-note-item{font-family:var(--mono);font-size:10px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start}
+.tc-note-item:last-child{border-bottom:none}
+.tc-note-who{color:var(--purple);font-weight:600;flex-shrink:0}
+.tc-note-text{color:var(--text);flex:1}
+.tc-note-ts{color:var(--muted);font-size:9px;flex-basis:100%;margin-top:1px}
+.tc-note-form{border-top:1px solid var(--border);padding-top:8px;margin-top:4px}
+.tc-note-input{width:100%;background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:7px;font-family:var(--mono);font-size:12px;resize:vertical;min-height:52px;outline:none;transition:border-color .15s}
+.tc-note-input:focus{border-color:var(--accent)}
+.tc-note-btn{background:none;border:1px solid rgba(167,139,250,.3);color:var(--purple);padding:4px 10px;border-radius:5px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:.15s;white-space:nowrap}
+.tc-note-btn:hover{background:rgba(167,139,250,.1)}
+/* Modal admin positions */
+.pos-list-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.pos-list-item:last-child{border-bottom:none}
+.pos-list-avatar{width:30px;height:30px;border-radius:50%;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.pos-list-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)}
+.pos-list-time{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.pos-list-coords{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:1px}
+.pos-list-fresh{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;margin-top:3px}
+.pos-list-fresh.ok{background:rgba(62,207,142,.1);color:var(--green);border:1px solid rgba(62,207,142,.25)}
+.pos-list-fresh.old{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.pos-goto-btn{margin-left:auto;background:none;border:1px solid rgba(79,156,249,.3);color:var(--accent);padding:5px 10px;border-radius:6px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:.15s;flex-shrink:0}
+.pos-goto-btn:hover{background:rgba(79,156,249,.1)}
 /* ══ GESTION TECHNICIENS ══ */
 .tech-mgmt-section{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
 .tech-mgmt-label{font-size:10px;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;font-weight:700}
@@ -604,6 +638,7 @@ body.light #techView{background:var(--bg)}
     <button class="nbtn tech" id="btnTech" onclick="toggleTech()">🔧 Technicien</button>
     <button class="nbtn add" id="btnAddMachine" onclick="retourConfig()">+ Machine</button>
     <button class="nbtn" id="btnMqtt" onclick="document.getElementById('mqttModal').classList.add('open')">⚙ MQTT</button>
+    <button class="nbtn" id="btnTechPos" onclick="openTechPosModal()" style="display:none;border-color:rgba(62,207,142,.4);color:var(--green)">📍 Techniciens</button>
     <button class="nbtn" id="btnCredentials" onclick="openCredentialsModal()" style="border-color:rgba(167,139,250,.4);color:var(--purple)">🔑 Comptes</button>
     <button class="nbtn" id="btnTheme" onclick="toggleTheme()" title="Thème clair/sombre">☀</button>
     <span id="roleTag" class="role-badge role-admin">ADMIN</span>
@@ -777,6 +812,14 @@ body.light #techView{background:var(--bg)}
       <div class="ts-card"><div class="ts-v" id="ts-warn" style="color:var(--amber)">—</div><div class="ts-l">À remplir</div></div>
       <div class="ts-card"><div class="ts-v" id="ts-ok" style="color:var(--green)">—</div><div class="ts-l">OK</div></div>
     </div>
+    <!-- Barre de position technicien -->
+    <div class="tech-pos-bar" id="techPosBar">
+      <div class="tech-pos-info">
+        <div class="tech-pos-dot" id="techPosDot"></div>
+        <div class="tech-pos-label" id="techPosLabel">Position non encore partagée</div>
+      </div>
+      <button class="tech-pos-btn" onclick="shareTechPosition()">📡 Je suis ici</button>
+    </div>
     <div class="tech-toolbar">
       <button class="tech-tb-btn tb-active" id="btnSortUrg" onclick="setTechSort('urgence',this)">🚨 Par urgence</button>
       <button class="tech-tb-btn tb-gps" id="btnTourGps" onclick="demarrerTourneeGPS(this)">🗺️ Tournée GPS optimisée</button>
@@ -784,6 +827,22 @@ body.light #techView{background:var(--bg)}
       <a id="techGmapsLink" href="#" target="_blank" class="tech-gmaps-btn" style="display:none">🗺 Ouvrir dans Maps</a>
     </div>
     <div id="techCards"></div>
+  </div>
+</div>
+
+<!-- MODAL LOCALISATION TECHNICIENS -->
+<div class="modal-bg" id="techPosModal">
+  <div class="modal" style="max-width:560px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h2 style="margin:0">📍 Localisation des techniciens</h2>
+      <button class="modal-close" style="margin:0" onclick="document.getElementById('techPosModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="techPosMap" style="height:280px;border-radius:10px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px"></div>
+    <div id="techPosList"><div style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:12px">Chargement…</div></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="cfg-btn" style="flex:1;background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3)" onclick="loadTechPositions()">🔄 Actualiser</button>
+      <button class="modal-close" style="margin:0" onclick="document.getElementById('techPosModal').classList.remove('open')">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -1094,6 +1153,7 @@ function _applyRole(role,workspaceName,techName){
   document.getElementById('btnAddMachine').style.display=isAdmin?'':'none';
   document.getElementById('btnMqtt').style.display=isAdmin?'':'none';
   document.getElementById('btnCredentials').style.display=isAdmin?'':'none';
+  document.getElementById('btnTechPos').style.display=isAdmin?'':'none';
   document.getElementById('btnClients').style.display='none';
   const tag=document.getElementById('roleTag');
   if(role==='superadmin'||workspaceName){
@@ -1640,6 +1700,7 @@ function histTypeLabel(type,detail){
   if(type==='delete')return '🗑 Machine supprimée';
   if(type==='edit')return '✏ Machine modifiée';
   if(type==='gps_update')return '📍 GPS mis à jour';
+  if(type==='note')return '📝 Note : '+(detail?.note?detail.note.slice(0,40)+(detail.note.length>40?'…':''):'');
   if(type==='all')return '✓ Tout rempli';
   if(type==='eau')return '💧 Eau remplie';
   return type;
@@ -1939,21 +2000,146 @@ document.addEventListener('click',e=>{
   }
 });
 
-// ══ JE SUIS ICI (technicien sur place) ══
+// ══ POSITION TECHNICIEN ══
+let _techPosWatcher=null;
+function shareTechPosition(){
+  if(!navigator.geolocation){toast('GPS non disponible sur cet appareil','warn');return;}
+  const dot=document.getElementById('techPosDot');
+  const lbl=document.getElementById('techPosLabel');
+  if(dot)dot.className='tech-pos-dot sending';
+  if(lbl)lbl.textContent='Localisation en cours…';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=parseFloat(pos.coords.latitude.toFixed(6));
+    const lng=parseFloat(pos.coords.longitude.toFixed(6));
+    const res=await authFetch('/api/workspaces/tech-position',{method:'POST',body:JSON.stringify({lat,lng})});
+    const now=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    if(dot)dot.className='tech-pos-dot active';
+    if(lbl)lbl.innerHTML=`Position partagée à <b>${now}</b> — ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    if(res&&res.ok)toast('📡 Position transmise à l\'admin ✓','success');
+  },()=>{
+    if(dot)dot.className='tech-pos-dot';
+    if(lbl)lbl.textContent='Impossible d\'obtenir la position (vérifiez GPS)';
+    toast('GPS indisponible. Activez la localisation.','error');
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
+}
+function startTechPositionTracking(){
+  // Auto-partage toutes les 3 minutes si la vue tech est ouverte
+  if(_techPosWatcher)clearInterval(_techPosWatcher);
+  shareTechPosition(); // Immédiatement au démarrage
+  _techPosWatcher=setInterval(()=>{
+    if(techOpen&&currentRole==='tech')shareTechPosition();
+  },3*60*1000);
+}
+function stopTechPositionTracking(){
+  if(_techPosWatcher){clearInterval(_techPosWatcher);_techPosWatcher=null;}
+}
+
+// ══ NOTES TECHNICIEN PAR MACHINE ══
+function toggleNoteForm(machineId){
+  const f=document.getElementById('notef-'+machineId);
+  if(!f)return;
+  const isOpen=f.style.display!=='none';
+  f.style.display=isOpen?'none':'block';
+  if(!isOpen){const ta=document.getElementById('note-'+machineId);if(ta){ta.value='';ta.focus();}}
+}
+function saveTechNote(machineId){
+  const ta=document.getElementById('note-'+machineId);
+  if(!ta)return;
+  const note=ta.value.trim();
+  if(!note){toast('Entrez une remarque','warn');return;}
+  const m=machines[machineId];if(!m)return;
+  m.techNotes=m.techNotes||[];
+  m.techNotes.unshift({techId:currentUserId,techName:currentUsername||'Tech',note,ts:Date.now()});
+  if(m.techNotes.length>10)m.techNotes=m.techNotes.slice(0,10); // Garder 10 notes max
+  logIntervention(machineId,m.name,'note',{note,by:currentUsername||currentRole});
+  saveAll();
+  toast('📝 Note enregistrée ✓','success');
+  renderTech();
+}
+
+// ══ ADMIN — CARTE DES POSITIONS TECHNICIENS ══
+let _techPosMap=null,_techPosMarkers=[];
+async function openTechPosModal(){
+  document.getElementById('techPosModal').classList.add('open');
+  await loadTechPositions();
+}
+async function loadTechPositions(){
+  document.getElementById('techPosList').innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:12px">Chargement…</div>';
+  const res=await authFetch('/api/workspaces/tech-positions');
+  if(!res||!res.ok){document.getElementById('techPosList').innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--red)">Erreur de chargement</div>';return;}
+  const positions=await res.json();
+  renderTechPosModal(positions);
+}
+function renderTechPosModal(positions){
+  const now=Date.now();
+  // Liste
+  const listEl=document.getElementById('techPosList');
+  if(!positions.length){
+    listEl.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:8px">Aucun technicien n\'a encore partagé sa position</div>';
+  } else {
+    listEl.innerHTML=positions.map(p=>{
+      const lat=p.detail?.lat,lng=p.detail?.lng;
+      const dt=new Date(p.done_at);
+      const minAgo=Math.round((now-dt.getTime())/60000);
+      const fresh=minAgo<60;
+      const timeStr=dt.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const mapsUrl=lat&&lng?`https://www.google.com/maps?q=${lat},${lng}`:'#';
+      return `<div class="pos-list-item">
+        <div class="pos-list-avatar">🔧</div>
+        <div style="flex:1">
+          <div class="pos-list-name">👤 ${escHtml(p.done_by)}</div>
+          <div class="pos-list-coords">📍 ${lat?.toFixed(5)||'—'}, ${lng?.toFixed(5)||'—'}</div>
+          <div class="pos-list-time">🕐 ${timeStr}</div>
+          <span class="pos-list-fresh ${fresh?'ok':'old'}">${fresh?'● En ligne':minAgo+'min'}</span>
+        </div>
+        ${lat&&lng?`<a class="pos-goto-btn" href="${mapsUrl}" target="_blank">🗺 Maps</a>`:''}
+      </div>`;
+    }).join('');
+  }
+  // Carte Leaflet
+  const mapEl=document.getElementById('techPosMap');
+  if(_techPosMap){_techPosMap.remove();_techPosMap=null;_techPosMarkers=[];}
+  if(!mapEl)return;
+  const validPos=positions.filter(p=>p.detail?.lat&&p.detail?.lng);
+  const center=validPos.length?[validPos[0].detail.lat,validPos[0].detail.lng]:[48.8566,2.3522];
+  _techPosMap=L.map('techPosMap',{zoomControl:true,attributionControl:false}).setView(center,12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(_techPosMap);
+  // Marqueurs machines (gris)
+  Object.values(machines).forEach(m=>{
+    if(m.lat&&m.lng){
+      L.circleMarker([m.lat,m.lng],{radius:5,color:'#4a5272',fillColor:'#4a5272',fillOpacity:.7,weight:1})
+        .bindPopup(`<b>${m.name}</b>`).addTo(_techPosMap);
+    }
+  });
+  // Marqueurs techs (vert)
+  validPos.forEach(p=>{
+    const minAgo=Math.round((now-new Date(p.done_at).getTime())/60000);
+    const col=minAgo<60?'#3ecf8e':'#f59e0b';
+    const marker=L.marker([p.detail.lat,p.detail.lng],{
+      icon:L.divIcon({html:`<div style="background:${col};border:2px solid #fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.4)">🔧</div>`,className:'',iconSize:[28,28],iconAnchor:[14,14]})
+    }).bindPopup(`<b>👤 ${p.done_by}</b><br>📍 ${p.detail.lat.toFixed(5)}, ${p.detail.lng.toFixed(5)}<br>🕐 ${new Date(p.done_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`).addTo(_techPosMap);
+    _techPosMarkers.push(marker);
+  });
+  if(validPos.length>1){
+    const group=L.featureGroup(_techPosMarkers);
+    setTimeout(()=>_techPosMap&&_techPosMap.fitBounds(group.getBounds().pad(.3)),100);
+  }
+  setTimeout(()=>_techPosMap&&_techPosMap.invalidateSize(),200);
+}
+
+// ══ JE SUIS ICI (maintenu pour compatibilité GPS machine) ══
 function setSuisIci(machineId){
+  // Redirige vers shareTechPosition si tech, sinon ancien comportement
+  if(currentRole==='tech'){shareTechPosition();return;}
   if(!navigator.geolocation){toast('GPS non disponible','warn');return;}
-  toast('📡 Localisation en cours…','info');
   navigator.geolocation.getCurrentPosition(pos=>{
     const m=machines[machineId];if(!m)return;
     m.lat=parseFloat(pos.coords.latitude.toFixed(6));
     m.lng=parseFloat(pos.coords.longitude.toFixed(6));
-    saveAll();
-    toast(`✅ Position GPS enregistrée pour ${m.name}`,'success');
+    saveAll();toast(`✅ Position GPS de ${m.name} mise à jour`,'success');
     logIntervention(machineId,m.name,'gps_update',{lat:m.lat,lng:m.lng,by:currentRole});
     renderTech();
-  },()=>{
-    toast('Impossible d\'obtenir votre position. Vérifiez les permissions GPS.','error');
-  },{enableHighAccuracy:true,timeout:10000});
+  },()=>{toast('GPS indisponible','error');},{enableHighAccuracy:true,timeout:10000});
 }
 
 // ══ EDIT MACHINE ══
@@ -2253,13 +2439,16 @@ function toggleTech(){
   document.getElementById('techView').style.display=techOpen?'block':'none';
   document.getElementById('btnTech').classList.toggle('active',techOpen);
   if(techOpen){
-    // Réinitialiser la session de tournée à chaque ouverture
     techVisited=new Set();techSortMode='urgence';techRouteOrder=[];techStartPos=null;
     document.querySelectorAll('.tech-tb-btn').forEach(b=>b.classList.remove('tb-active'));
     const urgBtn=document.getElementById('btnSortUrg');if(urgBtn)urgBtn.classList.add('tb-active');
     const info=document.getElementById('techTourInfo');if(info)info.textContent='Triées par urgence';
     const gl=document.getElementById('techGmapsLink');if(gl)gl.style.display='none';
     renderTech();
+    // Démarrer le partage automatique de position pour les techniciens
+    if(currentRole==='tech')startTechPositionTracking();
+  } else {
+    stopTechPositionTracking();
   }
 }
 function rfCls(pct,isWater){
@@ -2362,11 +2551,19 @@ function renderTech(){
           <div class="tc-issues">${urgentItems?`<span class="tc-urg">⚠ ${urgentItems}</span>`:`<span class="tc-allok">✓ Tous les niveaux OK</span>`}</div>
           <div class="tc-actions">
             <a class="tc-gps" href="${gpsUrl}" target="_blank">📍 Itinéraire</a>
-            <button class="tc-gps" style="border-color:rgba(62,207,142,.4);color:var(--green)" onclick="setSuisIci('${m.id}')">📡 Je suis ici</button>
+            <button class="tc-note-btn" onclick="toggleNoteForm('${m.id}')">📝 Note</button>
             <button class="tc-visited-btn${visited?' vdone':''}" onclick="toggleVisited('${m.id}')">${visited?'✓ Fait':'Marquer fait'}</button>
           </div>
         </div>
         ${rfBtns?`<div class="tc-refill">${rfBtns}<button class="tc-rfbtn rf-all" onclick="refillAll('${m.id}')">✓ Tout remplir</button></div>`:'<div class="tc-refill" style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px"><span style="font-family:var(--mono);font-size:11px;color:var(--green)">✓ Tous les niveaux à 100%</span></div>'}
+        ${(m.techNotes&&m.techNotes.length)?`<div class="tc-notes-wrap">${m.techNotes.slice(0,3).map(n=>`<div class="tc-note-item"><span class="tc-note-who">👤 ${escHtml(n.techName||'Tech')}</span><span class="tc-note-text">${escHtml(n.note)}</span><span class="tc-note-ts">🕐 ${new Date(n.ts).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')}</div>`:''}
+        <div class="tc-note-form" id="notef-${m.id}" style="display:none">
+          <textarea class="tc-note-input" id="note-${m.id}" placeholder="Remarque : état de la machine, problème détecté, action effectuée…"></textarea>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <button class="tc-rfbtn rf-ok" style="flex:1" onclick="saveTechNote('${m.id}')">✓ Enregistrer</button>
+            <button class="tc-rfbtn" onclick="document.getElementById('notef-${m.id}').style.display='none'">Annuler</button>
+          </div>
+        </div>
       </div>
     </div>`;
   }).join('');
