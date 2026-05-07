@@ -373,16 +373,19 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
   #dashboard{padding-bottom:calc(75px + env(safe-area-inset-bottom,0px))}
 
   /* ════════════════════════════
-     NAV DU HAUT — ultra compacte
+     NAV DU HAUT — minimale
      ════════════════════════════ */
   nav{
-    padding:8px 12px;
+    padding:0 12px;
+    height:44px;
+    min-height:44px;
     gap:0;
     justify-content:space-between;
-    min-height:48px;
+    flex-wrap:nowrap;
+    overflow:hidden;
   }
-  .nav-brand{font-size:13px;letter-spacing:-.3px}
-  /* Cacher tout ce qui n'est pas essentiel */
+  .nav-brand{font-size:13px;letter-spacing:-.3px;flex-shrink:0}
+  /* Cacher TOUT sauf le strict minimum */
   .nav-status{display:none!important}
   #btnMqtt{display:none!important}
   #btnCredentials{display:none!important}
@@ -390,12 +393,39 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
   #btnClients{display:none!important}
   #btnTechPos{display:none!important}
   #roleTag{display:none!important}
-  /* Nav right : seulement Tech + Theme + Déco */
-  .nav-right{gap:5px;flex-wrap:nowrap}
-  .nbtn{padding:6px 10px;font-size:10px;border-radius:7px}
-  /* Déconnexion : juste une icône */
-  .nbtn[onclick="doLogout()"]{font-size:0;padding:7px 9px}
-  .nbtn[onclick="doLogout()"]::before{content:'⏻';font-size:15px}
+  #btnTheme{display:none!important}
+  /* Nav right : Tech + Déconnexion seulement */
+  .nav-right{gap:6px;flex-wrap:nowrap;flex-shrink:0}
+  /* Tous les boutons : icône seule, carré */
+  .nbtn{
+    padding:0;
+    width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:0;
+    border-radius:8px;
+    flex-shrink:0;
+  }
+  /* Tech : icône clé */
+  #btnTech::before{content:'🔧';font-size:16px}
+  /* Déconnexion : icône porte */
+  .nbtn[onclick="doLogout()"]::before{content:'⏻';font-size:18px}
+  /* Bouton install Android dans la nav */
+  #btnInstallAndroid{
+    display:none;
+    padding:0 12px;
+    height:34px;
+    font-size:11px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-family:var(--font);
+    font-weight:700;
+    cursor:pointer;
+    align-items:center;
+    gap:5px;
+    white-space:nowrap;
+  }
 
   /* ── Stats bar 3 colonnes ── */
   .stats-bar{grid-template-columns:repeat(3,1fr)}
@@ -846,6 +876,7 @@ body.light #techView{background:var(--bg)}
     <button class="nbtn" id="btnCredentials" onclick="openCredentialsModal()" style="border-color:rgba(167,139,250,.4);color:var(--purple)">🔑 Comptes</button>
     <button class="nbtn" id="btnTheme" onclick="toggleTheme()" title="Thème clair/sombre">☀</button>
     <span id="roleTag" class="role-badge role-admin">ADMIN</span>
+    <button id="btnInstallAndroid" onclick="installPWA()" title="Installer l'app">⬇ Installer</button>
     <button class="nbtn" onclick="doLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red)">Déconnexion</button>
   </div>
 </nav>
@@ -3195,8 +3226,14 @@ let pwaInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   pwaInstallPrompt = e;
-  // Afficher la bannière si pas déjà rejeté
-  if(!localStorage.getItem('pwaBannerDismissed')){
+  // Sur mobile Android : montrer le bouton dans la nav
+  if(window.innerWidth <= 768){
+    const navBtn = document.getElementById('btnInstallAndroid');
+    if(navBtn) navBtn.style.display = 'flex';
+    // Cacher la grande bannière
+    const banner = document.getElementById('pwaBanner');
+    if(banner) banner.style.display = 'none';
+  } else if(!localStorage.getItem('pwaBannerDismissed')){
     const banner = document.getElementById('pwaBanner');
     if(banner) banner.style.display = 'flex';
   }
@@ -3206,8 +3243,10 @@ window.addEventListener('beforeinstallprompt', e => {
 window.addEventListener('appinstalled', () => {
   const banner = document.getElementById('pwaBanner');
   if(banner) banner.style.display = 'none';
+  const navBtn = document.getElementById('btnInstallAndroid');
+  if(navBtn) navBtn.style.display = 'none';
   pwaInstallPrompt = null;
-  toast('✅ NECTA Monitor installé sur votre appareil !','success');
+  toast('✅ NECTA Monitor installé !','success');
 });
 
 function installPWA(){
@@ -3217,6 +3256,8 @@ function installPWA(){
     if(result.outcome === 'accepted'){
       const banner = document.getElementById('pwaBanner');
       if(banner) banner.style.display = 'none';
+      const navBtn = document.getElementById('btnInstallAndroid');
+      if(navBtn) navBtn.style.display = 'none';
     }
     pwaInstallPrompt = null;
   });
