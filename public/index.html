@@ -471,10 +471,18 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
   .histo-table th:nth-child(5),.histo-table td:nth-child(5){display:none}
   .histo-table th,.histo-table td{padding:8px 10px;font-size:11px}
 
-  /* ── Tech view ── */
+  /* ── Tech view — safe area ── */
+  #techView{padding-top:env(safe-area-inset-top,0px)}
   .tech-inner{padding:12px 14px}
   .tc-actions{gap:6px}
   .tc-rfbtn{padding:9px 12px;font-size:11px;min-height:42px}
+
+  /* ── Tous les éléments fixed/fullscreen — safe area ── */
+  #loginScreen{padding-top:env(safe-area-inset-top,0px)}
+  #loadingScreen{padding-top:env(safe-area-inset-top,0px)}
+  #wsView{padding-top:env(safe-area-inset-top,0px)}
+  #portal{padding-top:env(safe-area-inset-top,0px)}
+  .modal-bg{padding-top:env(safe-area-inset-top,0px)}
 
   /* ── Cacher bannière notifications (trop encombrante sur mobile) ── */
   #notifBanner{display:none!important}
