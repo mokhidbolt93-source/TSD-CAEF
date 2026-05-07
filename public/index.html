@@ -3772,9 +3772,16 @@ async function markTourDone(){
 // Charger et afficher la tournée du jour pour le tech
 async function loadAndShowTechTour(){
   if(currentRole!=='tech')return;
-  const res=await authFetch('/api/tours/today');
+  // Charger toutes les tournées du tech (filtrées côté serveur par tech_id)
+  const res=await authFetch('/api/tours');
   if(!res||!res.ok)return;
-  _todayTour=await res.json();
+  const allTours=await res.json();
+  if(!allTours||!allTours.length){renderTechTodayTour();return;}
+  const today=new Date().toISOString().split('T')[0];
+  // Priorité : tournée du jour non terminée → prochaine tournée → dernière en date
+  _todayTour=allTours.find(t=>t.tour_date===today&&t.status!=='done')
+    ||allTours.find(t=>t.tour_date>=today&&t.status!=='done')
+    ||allTours[0]||null;
   renderTechTodayTour();
 }
 
@@ -3782,7 +3789,13 @@ function renderTechTodayTour(){
   const banner=document.getElementById('techTodayTourBanner');
   if(!banner||!_todayTour){if(banner)banner.style.display='none';return;}
   banner.style.display='block';
-  document.getElementById('techTodayTourDate').textContent=new Date(_todayTour.tour_date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const today=new Date().toISOString().split('T')[0];
+  const isToday=_todayTour.tour_date===today;
+  const dateLabel=new Date(_todayTour.tour_date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('techTodayTourDate').textContent=(isToday?'Aujourd\'hui — ':'')+dateLabel;
+  // Colorer le banner différemment si ce n'est pas aujourd'hui
+  banner.style.borderColor=isToday?'rgba(79,156,249,.2)':'rgba(245,158,11,.2)';
+  banner.style.background=isToday?'rgba(79,156,249,.07)':'rgba(245,158,11,.05)';
   const machines=_todayTour.machines||[];
   document.getElementById('techTodayTourMachines').innerHTML=machines.map((m,i)=>`
     <div class="tech-tour-machine ${m.status==='done'?'ttm-done':''}" onclick="markTourMachineDone('${m.id||i}')">
