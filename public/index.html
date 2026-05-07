@@ -363,113 +363,110 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 /* ══════════════════════════════════
    RESPONSIVE MOBILE — téléphone seul
    ══════════════════════════════════ */
+
+/* Bottom nav — caché par défaut, visible seulement sur mobile */
+.mobile-bottom-nav{display:none}
+
 @media(max-width:768px){
 
-  /* ── Zones sécurisées iPhone (notch / barre home) ── */
-  body{padding-bottom:env(safe-area-inset-bottom)}
-  #dashboard{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  /* ── Safe areas iPhone ── */
+  #dashboard{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 
-  /* ── Navigation ── */
-  nav{padding:10px 14px;gap:8px;flex-wrap:nowrap}
+  /* ── Navigation simplifiée ── */
+  nav{padding:10px 14px;gap:6px}
   .nav-brand{font-size:14px;flex-shrink:0}
-  .nav-right{gap:5px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .nav-right{gap:4px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .nav-right::-webkit-scrollbar{display:none}
-  .nav-status{display:none} /* cacher le statut MQTT en mobile */
-  .nbtn{padding:7px 10px;font-size:10px;white-space:nowrap;flex-shrink:0}
-  /* Cacher les boutons secondaires sur mobile */
+  .nav-status{display:none}
   #btnMqtt{display:none!important}
   #btnCredentials{display:none!important}
   #roleTag{display:none!important}
+  .nbtn{padding:7px 9px;font-size:10px;white-space:nowrap;flex-shrink:0}
 
-  /* ── Barre de stats : 3 colonnes ── */
-  .stats-bar{grid-template-columns:repeat(3,1fr);overflow:hidden}
+  /* ── Stats 3 colonnes ── */
+  .stats-bar{grid-template-columns:repeat(3,1fr)}
   .stat{padding:9px 10px}
   .stat-v{font-size:17px}
   .stat-l{font-size:8px}
 
-  /* ── Onglets : scroll horizontal fluide ── */
-  .tabs{padding:8px 14px 0;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab{padding:8px 13px;font-size:11px;flex-shrink:0}
+  /* ── Masquer les tabs du haut (remplacés par bottom nav) ── */
+  .tabs{display:none!important}
 
-  /* ── Vues : padding réduit ── */
+  /* ── Vues ── */
   .view{padding:12px 14px}
 
-  /* ── Masquer la sidebar (remplacée par onglet Historique) ── */
+  /* ── Masquer la sidebar ── */
   .two-col{display:block}
-  .sidebar{display:none}
+  .sidebar{display:none!important}
   #tourneesPanel{display:none!important}
 
-  /* ── Grille machines : 1 colonne pleine largeur ── */
+  /* ── Machines : 1 colonne ── */
   .machines-grid{grid-template-columns:1fr;gap:10px}
-
-  /* ── Cartes machines : plus grandes et lisibles ── */
   .card-name{font-size:14px}
   .card-body{padding:13px}
-  .bar-bg{height:8px;border-radius:4px}
-  .bar-fill{height:8px}
+  .bar-bg,.bar-fill{height:8px;border-radius:4px}
   .card-foot{padding:9px 13px;font-size:11px}
+  .export-bar{display:none}
 
-  /* ── Ingrédients : 1 colonne ── */
+  /* ── Autres onglets : 1 colonne ── */
   .ing-layout{grid-template-columns:1fr}
-
-  /* ── Stats / CA / Boissons : 1 colonne ── */
   .stats-layout,.ca-layout,.drinks-layout{grid-template-columns:1fr}
+  #v-alertes>div:first-child{grid-template-columns:1fr}
 
-  /* ── Historique : adapté mobile ── */
+  /* ── Historique mobile ── */
   .histo-header{flex-direction:column;align-items:flex-start;gap:8px}
   .histo-kpis{grid-template-columns:repeat(3,1fr)}
   .histo-filters{flex-direction:column}
-  .histo-search{min-width:unset;width:100%}
-  .histo-select{width:100%}
-  /* Cacher colonnes "Détail" et "Effectué par" sur petits écrans */
-  .histo-table th:nth-child(4),.histo-table td:nth-child(4){display:none}
+  .histo-search,.histo-select{width:100%}
+  .histo-table th:nth-child(4),.histo-table td:nth-child(4),
+  .histo-table th:nth-child(5),.histo-table td:nth-child(5){display:none}
   .histo-table th,.histo-table td{padding:9px 10px;font-size:11px}
-  .histo-table-wrap{overflow-x:auto}
 
-  /* ── Modals : plein écran ── */
-  .modal-box{width:95vw;max-height:90vh;overflow-y:auto;margin:auto}
-  .edit-modal-inner{max-height:85vh;overflow-y:auto}
+  /* ── Tech view ── */
+  .tech-inner{padding:12px 14px}
+  .tc-actions{gap:6px}
+  .tc-rfbtn{padding:9px 12px;font-size:11px;min-height:40px}
+  .tech-pos-bar{padding:10px 14px}
 
-  /* ── Alertes/Telegram ── */
-  #v-alertes>div:first-child{grid-template-columns:1fr}
+  /* ── PWA bannières ── */
+  #pwaBanner{flex-direction:column;gap:8px}
+  #iosInstallBanner{flex-direction:column}
 
-  /* ── PWA bannière ── */
-  #pwaBanner{flex-direction:column;align-items:flex-start;gap:8px}
-  #iosInstallBanner{flex-direction:column;align-items:flex-start}
-
-  /* ── Barre de navigation du bas (app-like) ── */
+  /* ═══════════════════════════════
+     BARRE DE NAVIGATION BAS — app-like
+     ═══════════════════════════════ */
   .mobile-bottom-nav{
-    display:flex!important;
-    position:fixed;bottom:0;left:0;right:0;
-    height:calc(58px + env(safe-area-inset-bottom));
-    padding-bottom:env(safe-area-inset-bottom);
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    height:60px;
+    padding-bottom:env(safe-area-inset-bottom,0px);
     background:var(--bg2);
-    border-top:1px solid var(--border);
-    z-index:100;
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
+    border-top:2px solid var(--border);
+    z-index:9999;
   }
   .mobile-bottom-nav button{
-    flex:1;background:none;border:none;color:var(--muted);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:3px;cursor:pointer;font-family:var(--mono);font-size:9px;
-    padding:8px 4px;transition:.15s;-webkit-tap-highlight-color:transparent;
+    flex:1;
+    min-height:60px;
+    background:none;
+    border:none;
+    color:var(--muted);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    cursor:pointer;
+    font-family:var(--mono);
+    font-size:9px;
+    padding:8px 2px;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
   }
   .mobile-bottom-nav button.mbnav-active{color:var(--accent)}
-  .mobile-bottom-nav button span.mbnav-icon{font-size:20px;line-height:1}
-  .mobile-bottom-nav button span.mbnav-label{font-size:9px;letter-spacing:.03em}
-
-  /* Cacher les tabs du haut sur mobile (remplacés par la bottom nav) */
-  .tabs{display:none}
-
-  /* ── Tech view mobile ── */
-  .tech-inner{padding:12px 14px}
-  .tc{margin-bottom:10px}
-  .tc-name{font-size:15px}
-  .tc-actions{gap:6px}
-  .tc-rfbtn{padding:8px 12px;font-size:11px}
-  .tech-pos-bar{padding:10px 14px}
+  .mobile-bottom-nav button.mbnav-active .mbnav-icon{transform:scale(1.15)}
+  .mbnav-icon{font-size:22px;line-height:1;display:block;transition:.15s}
+  .mbnav-label{font-size:9px;display:block;letter-spacing:.02em;margin-top:2px}
 }
 /* ══ LOGIN ══ */
 #loginScreen{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px}
@@ -3126,35 +3123,26 @@ function connectMQTT(){
 
 // ══ MOBILE BOTTOM NAV ══
 function mbnav(name, btn){
-  // Changer l'onglet actif
-  const tabBtn = document.querySelector(`.tabs .tab:nth-child(${
-    {machines:1,ingredients:2,stats:3,carte:4,ca:5,boissons:6,alertes:7,historique:8}[name]
-  })`);
+  // Trouver le bouton tab correspondant dans la barre du haut et switcher
+  const tabMap={machines:0,ingredients:1,stats:2,carte:3,ca:4,boissons:5,alertes:6,historique:7};
+  const allTabs=document.querySelectorAll('.tabs .tab');
+  const tabBtn=allTabs[tabMap[name]];
   if(tabBtn) switchTab(name, tabBtn);
-  // Mettre à jour la bottom nav
-  document.querySelectorAll('.mobile-bottom-nav button').forEach(b => b.classList.remove('mbnav-active'));
+  else {
+    // Fallback: switcher directement sans tab button
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const v=document.getElementById('v-'+name);
+    if(v) v.classList.add('active');
+    if(name==='historique') renderHistoriqueTab();
+    if(name==='carte') renderMap();
+    if(name==='ingredients') renderIngredients();
+    if(name==='stats') renderStats();
+  }
+  // Mettre à jour l'icône active dans la bottom nav
+  document.querySelectorAll('.mobile-bottom-nav button').forEach(b=>b.classList.remove('mbnav-active'));
   if(btn) btn.classList.add('mbnav-active');
 }
-
-function showMobileNav(show){
-  const nav = document.getElementById('mobileBottomNav');
-  if(nav && window.innerWidth <= 768) nav.style.display = show ? 'flex' : 'none';
-}
-
-// Afficher la bottom nav sur mobile quand le dashboard est visible
-function initMobileNav(){
-  if(window.innerWidth <= 768){
-    showMobileNav(true);
-  }
-}
-window.addEventListener('resize', () => {
-  if(window.innerWidth > 768){
-    const nav = document.getElementById('mobileBottomNav');
-    if(nav) nav.style.display = 'none';
-  } else {
-    showMobileNav(true);
-  }
-});
+function initMobileNav(){} // plus rien à faire, CSS gère tout
 
 // ══ PWA — Service Worker + Install ══
 let pwaInstallPrompt = null;
@@ -3224,28 +3212,28 @@ if('serviceWorker' in navigator){
 </script>
 <div id="toastContainer"></div>
 
-<!-- Barre de navigation mobile (cachée sur desktop) -->
-<nav class="mobile-bottom-nav" id="mobileBottomNav" style="display:none">
-  <button onclick="mbnav('machines',this)" class="mbnav-active" id="mbn-machines">
-    <span class="mbnav-icon">🖥</span>
+<!-- Barre de navigation mobile — visible uniquement sur téléphone via CSS -->
+<div class="mobile-bottom-nav" id="mobileBottomNav">
+  <button onclick="mbnav('machines',this)" class="mbnav-active">
+    <span class="mbnav-icon">🖥️</span>
     <span class="mbnav-label">Machines</span>
   </button>
-  <button onclick="mbnav('ingredients',this)" id="mbn-ingredients">
+  <button onclick="mbnav('ingredients',this)">
     <span class="mbnav-icon">☕</span>
-    <span class="mbnav-label">Ingr.</span>
+    <span class="mbnav-label">Ingrédients</span>
   </button>
-  <button onclick="mbnav('carte',this)" id="mbn-carte">
-    <span class="mbnav-icon">🗺</span>
+  <button onclick="mbnav('carte',this)">
+    <span class="mbnav-icon">🗺️</span>
     <span class="mbnav-label">Carte</span>
   </button>
-  <button onclick="mbnav('historique',this)" id="mbn-historique">
+  <button onclick="mbnav('historique',this)">
     <span class="mbnav-icon">📋</span>
     <span class="mbnav-label">Historique</span>
   </button>
-  <button onclick="mbnav('alertes',this)" id="mbn-alertes">
+  <button onclick="mbnav('alertes',this)">
     <span class="mbnav-icon">🔔</span>
     <span class="mbnav-label">Alertes</span>
   </button>
-</nav>
+</div>
 </body>
 </html>
