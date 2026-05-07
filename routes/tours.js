@@ -7,12 +7,16 @@ router.get('/', requireAuth, async (req, res) => {
   let query = supabase
     .from('tours')
     .select('*')
-    .eq('workspace_id', req.user.workspaceId)
     .order('tour_date', { ascending: false })
     .limit(100);
 
   if (req.user.role === 'tech') {
-    query = query.eq('tech_id', req.user.userId);
+    // Tech : chercher TOUTES les tournées qui lui sont assignées (par id OU par nom)
+    // Sans filtre workspace pour éviter les problèmes de workspace mismatch
+    query = query.or(`tech_id.eq.${req.user.userId},tech_name.eq.${req.user.username}`);
+  } else {
+    // Admin : uniquement son workspace
+    query = query.eq('workspace_id', req.user.workspaceId);
   }
 
   const { data, error } = await query;
