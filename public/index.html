@@ -191,6 +191,39 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 .ca-rank-row:last-child{border-bottom:none}
 .ca-rank-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:3px;overflow:hidden}
 .ca-rank-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s}
+/* ══ HISTORIQUE TAB ══ */
+.histo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.histo-title{font-size:18px;font-weight:800}
+.histo-sub{font-size:11px;font-family:var(--mono);color:var(--muted);margin-top:2px}
+.histo-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.hkpi{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
+.hkpi-v{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
+.hkpi-l{font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.histo-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.histo-search{flex:1;min-width:160px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-family:var(--mono);font-size:12px}
+.histo-search:focus{outline:none;border-color:var(--accent)}
+.histo-select{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-family:var(--mono);font-size:12px;cursor:pointer}
+.histo-select:focus{outline:none;border-color:var(--accent)}
+.histo-refresh{background:none;border:1px solid var(--border2);color:var(--muted);padding:8px 13px;border-radius:8px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:.15s}
+.histo-refresh:hover{border-color:var(--accent);color:var(--accent)}
+.histo-export{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.3);color:var(--green);padding:8px 13px;border-radius:8px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:.15s}
+.histo-export:hover{background:rgba(62,207,142,.15)}
+.histo-table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.histo-table{width:100%;border-collapse:collapse}
+.histo-table th{background:var(--bg3);font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap}
+.histo-table td{padding:10px 14px;font-family:var(--mono);font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.histo-table tr:last-child td{border-bottom:none}
+.histo-table tr:hover td{background:rgba(255,255,255,.02)}
+.htype-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;font-family:var(--mono);white-space:nowrap}
+.htype-refill{background:rgba(62,207,142,.12);color:var(--green);border:1px solid rgba(62,207,142,.25)}
+.htype-refill_eau{background:rgba(79,156,249,.12);color:var(--accent);border:1px solid rgba(79,156,249,.25)}
+.htype-note{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.htype-edit{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.htype-create{background:rgba(62,207,142,.1);color:var(--green);border:1px solid rgba(62,207,142,.2)}
+.htype-delete{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.htype-other{background:rgba(74,82,114,.2);color:var(--muted2);border:1px solid var(--border)}
+.histo-empty{text-align:center;padding:40px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.histo-count{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px}
 /* ══ TECHNICIEN ══ */
 @keyframes slideInLeft{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
 @keyframes techGlow{0%,100%{box-shadow:0 2px 20px rgba(0,0,0,.4)}55%{box-shadow:0 2px 28px rgba(239,68,68,.2),0 0 0 1px rgba(239,68,68,.15)}}
@@ -661,6 +694,7 @@ body.light #techView{background:var(--bg)}
   <button class="tab" onclick="switchTab('ca',this)">Chiffre d'affaires</button>
   <button class="tab" onclick="switchTab('boissons',this)">Boissons</button>
   <button class="tab" onclick="switchTab('alertes',this)">Alertes & Telegram</button>
+  <button class="tab" onclick="switchTab('historique',this)">📋 Historique</button>
 </div>
 
 <div id="notifBanner" class="hidden">
@@ -791,6 +825,58 @@ body.light #techView{background:var(--bg)}
     <div id="refillLogList" style="max-height:260px;overflow-y:auto"><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">Aucun remplissage enregistré</div></div>
   </div>
 </div>
+</div>
+
+<!-- HISTORIQUE TAB -->
+<div class="view" id="v-historique">
+  <div class="histo-header">
+    <div>
+      <div class="histo-title">📋 Historique des interventions</div>
+      <div class="histo-sub">3 derniers mois · 500 entrées max</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="histo-refresh" onclick="reloadHistoriqueTab()">⟳ Actualiser</button>
+      <button class="histo-export" onclick="exportHistoriqueCSV()">⬇ Exporter CSV</button>
+    </div>
+  </div>
+  <div class="histo-kpis" id="histoKpis"></div>
+  <div class="histo-filters">
+    <input class="histo-search" id="histoSearch" type="text" placeholder="🔍 Rechercher machine, technicien..." oninput="filterHistorique()">
+    <select class="histo-select" id="histoType" onchange="filterHistorique()">
+      <option value="">Tous les types</option>
+      <option value="refill_all">Remplissage complet</option>
+      <option value="refill_eau">Remplissage eau</option>
+      <option value="note">Note technicien</option>
+      <option value="edit">Modification</option>
+      <option value="create">Création</option>
+      <option value="delete">Suppression</option>
+    </select>
+    <select class="histo-select" id="histoTech" onchange="filterHistorique()">
+      <option value="">Tous les techniciens</option>
+    </select>
+    <select class="histo-select" id="histoPeriod" onchange="filterHistorique()">
+      <option value="90">3 derniers mois</option>
+      <option value="30">30 derniers jours</option>
+      <option value="7">7 derniers jours</option>
+      <option value="1">Aujourd'hui</option>
+    </select>
+  </div>
+  <div class="histo-count" id="histoCount"></div>
+  <div class="histo-table-wrap">
+    <table class="histo-table">
+      <thead>
+        <tr>
+          <th>Date &amp; heure</th>
+          <th>Machine</th>
+          <th>Type</th>
+          <th>Détail</th>
+          <th>Effectué par</th>
+        </tr>
+      </thead>
+      <tbody id="histoTableBody"></tbody>
+    </table>
+    <div class="histo-empty" id="histoEmpty" style="display:none">Aucune intervention trouvée</div>
+  </div>
 </div>
 
 <!-- MODE TECHNICIEN -->
@@ -1767,6 +1853,143 @@ function renderRefillLog(){
     return `<div class="refill-log-item"><span class="refill-log-who">👤 ${escHtml(who)}</span> — <b>${escHtml(name)}</b> — ${label}<br><span class="refill-log-when">🕐 ${when}</span></div>`;
   }).join('');
 }
+
+// ══ HISTORIQUE TAB ══
+function histoTypeBadge(type){
+  const map={
+    refill_all:['htype-refill','✅ Remplissage complet'],
+    refill_eau:['htype-refill_eau','💧 Eau'],
+    note:['htype-note','📝 Note'],
+    edit:['htype-edit','✏️ Modification'],
+    create:['htype-create','➕ Création'],
+    delete:['htype-delete','🗑 Suppression'],
+    gps_position:['htype-other','📍 Position GPS'],
+  };
+  const [cls,label]=map[type]||['htype-other',type||'—'];
+  return `<span class="htype-badge ${cls}">${label}</span>`;
+}
+function histoDetail(type,detail){
+  if(!detail||!Object.keys(detail).length)return '—';
+  if(type==='note')return escHtml((detail.note||'').slice(0,80)+(detail.note&&detail.note.length>80?'…':''));
+  if(type==='refill_all')return 'Tous les ingrédients';
+  if(type==='refill_eau')return 'Eau / nettoyage';
+  if(type==='edit'&&detail.name)return 'Renommé → '+escHtml(detail.name);
+  if(type==='gps_position')return `Lat ${(detail.lat||0).toFixed(4)}, Lng ${(detail.lng||0).toFixed(4)}`;
+  const parts=Object.entries(detail).filter(([k])=>!['by'].includes(k)).map(([k,v])=>`${k}: ${v}`);
+  return escHtml(parts.slice(0,3).join(' · '))||'—';
+}
+let histoFiltered=[];
+function renderHistoriqueTab(){
+  // Peupler le filtre techniciens
+  const techSel=document.getElementById('histoTech');
+  if(techSel&&techSel.options.length<=1){
+    const techs=[...new Set(refillLog.map(r=>r.done_by||r.who).filter(Boolean))].sort();
+    techs.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;techSel.appendChild(o);});
+  }
+  filterHistorique();
+}
+async function reloadHistoriqueTab(){
+  const btn=document.querySelector('.histo-refresh');
+  if(btn){btn.textContent='⟳ Chargement...';btn.disabled=true;}
+  const hRes=await authFetch('/api/history?limit=500');
+  if(hRes&&hRes.ok){
+    refillLog=await hRes.json();
+    renderSidebarHistory();
+    // Repeupler les techs
+    const techSel=document.getElementById('histoTech');
+    if(techSel){
+      while(techSel.options.length>1)techSel.remove(1);
+      const techs=[...new Set(refillLog.map(r=>r.done_by||r.who).filter(Boolean))].sort();
+      techs.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;techSel.appendChild(o);});
+    }
+  }
+  if(btn){btn.textContent='⟳ Actualiser';btn.disabled=false;}
+  filterHistorique();
+}
+function filterHistorique(){
+  const search=(document.getElementById('histoSearch')||{}).value?.toLowerCase()||'';
+  const typeF=(document.getElementById('histoType')||{}).value||'';
+  const techF=(document.getElementById('histoTech')||{}).value||'';
+  const days=parseInt((document.getElementById('histoPeriod')||{}).value||'90');
+  const since=Date.now()-days*24*60*60*1000;
+
+  // Exclure les positions GPS du listing principal
+  const filtered=refillLog.filter(r=>{
+    if(r.type==='gps_position')return false;
+    const who=r.done_by||r.who||'';
+    const name=r.machine_name||r.machineName||r.machine_id||'';
+    const ts=r.done_at?new Date(r.done_at).getTime():(r.ts||0);
+    if(ts<since)return false;
+    if(typeF&&r.type!==typeF)return false;
+    if(techF&&who!==techF)return false;
+    if(search&&!name.toLowerCase().includes(search)&&!who.toLowerCase().includes(search)&&!(r.detail?.note||'').toLowerCase().includes(search))return false;
+    return true;
+  });
+  histoFiltered=filtered;
+
+  // KPIs
+  const kpiEl=document.getElementById('histoKpis');
+  if(kpiEl){
+    const total=filtered.length;
+    const today=filtered.filter(r=>{const dt=r.done_at?new Date(r.done_at):(r.ts?new Date(r.ts):null);return dt&&dt.toDateString()===new Date().toDateString();}).length;
+    const refills=filtered.filter(r=>r.type==='refill_all'||r.type==='refill_eau').length;
+    const notes=filtered.filter(r=>r.type==='note').length;
+    const techs=[...new Set(filtered.map(r=>r.done_by||r.who).filter(Boolean))].length;
+    kpiEl.innerHTML=`
+      <div class="hkpi"><div class="hkpi-v" style="color:var(--accent)">${total}</div><div class="hkpi-l">Total interventions</div></div>
+      <div class="hkpi"><div class="hkpi-v" style="color:var(--green)">${today}</div><div class="hkpi-l">Aujourd'hui</div></div>
+      <div class="hkpi"><div class="hkpi-v" style="color:var(--green)">${refills}</div><div class="hkpi-l">Remplissages</div></div>
+      <div class="hkpi"><div class="hkpi-v" style="color:var(--purple)">${notes}</div><div class="hkpi-l">Notes</div></div>
+      <div class="hkpi"><div class="hkpi-v" style="color:var(--amber)">${techs}</div><div class="hkpi-l">Techniciens actifs</div></div>
+    `;
+  }
+
+  const countEl=document.getElementById('histoCount');
+  if(countEl)countEl.textContent=`${filtered.length} intervention${filtered.length!==1?'s':''} trouvée${filtered.length!==1?'s':''}`;
+
+  const tbody=document.getElementById('histoTableBody');
+  const emptyEl=document.getElementById('histoEmpty');
+  if(!tbody)return;
+  if(!filtered.length){tbody.innerHTML='';if(emptyEl)emptyEl.style.display='block';return;}
+  if(emptyEl)emptyEl.style.display='none';
+  tbody.innerHTML=filtered.map(r=>{
+    const who=r.done_by||r.who||'—';
+    const name=r.machine_name||r.machineName||r.machine_id||'—';
+    const dt=r.done_at?new Date(r.done_at):(r.ts?new Date(r.ts):null);
+    const when=dt?dt.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const type=r.type||'';
+    const detail=r.detail||{};
+    return `<tr>
+      <td style="color:var(--muted);white-space:nowrap">${when}</td>
+      <td style="color:var(--accent);font-weight:600">${escHtml(name)}</td>
+      <td>${histoTypeBadge(type)}</td>
+      <td style="color:var(--muted2);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${histoDetail(type,detail)}</td>
+      <td style="color:var(--purple)">${escHtml(who)}</td>
+    </tr>`;
+  }).join('');
+}
+function exportHistoriqueCSV(){
+  if(!histoFiltered.length){toast('Aucune donnée à exporter','warn');return;}
+  const rows=[['Date','Machine','Type','Détail','Effectué par']];
+  histoFiltered.forEach(r=>{
+    const who=r.done_by||r.who||'';
+    const name=r.machine_name||r.machineName||r.machine_id||'';
+    const dt=r.done_at?new Date(r.done_at):(r.ts?new Date(r.ts):null);
+    const when=dt?dt.toLocaleString('fr-FR'):'';
+    const type=r.type||'';
+    const detail=r.detail||{};
+    const det=type==='note'?(detail.note||''):Object.entries(detail).filter(([k])=>k!=='by').map(([k,v])=>`${k}:${v}`).join(' | ');
+    rows.push([when,name,type,det,who]);
+  });
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download='historique-interventions-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();URL.revokeObjectURL(url);
+  toast('✓ Export CSV téléchargé','success');
+}
+
 function refillAll(id){
   const m=machines[id];
   m.boissons=Object.fromEntries(KEYS.map(k=>[k,0]));
@@ -2625,6 +2848,7 @@ function switchTab(name,btn){
   if(name==='carte')renderMap();
   if(name==='ca'){renderPrices();updateCA();}
   if(name==='alertes')renderRefillLog();
+  if(name==='historique')renderHistoriqueTab();
 }
 
 // ══ MQTT ══
