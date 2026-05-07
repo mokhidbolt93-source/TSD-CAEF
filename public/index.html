@@ -360,7 +360,117 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 .empty-state{text-align:center;padding:48px 20px}
 .empty-icon{font-size:42px;margin-bottom:12px}.empty-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:7px}
 .empty-desc{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.6}
-@media(max-width:768px){.stats-bar{grid-template-columns:repeat(3,1fr)}.two-col,.drinks-layout,.stats-layout,.ca-layout{grid-template-columns:1fr}.view{padding:13px 14px}nav{padding:11px 14px}.stats-bar .stat:nth-child(n+4){display:none}}
+/* ══════════════════════════════════
+   RESPONSIVE MOBILE — téléphone seul
+   ══════════════════════════════════ */
+@media(max-width:768px){
+
+  /* ── Zones sécurisées iPhone (notch / barre home) ── */
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  #dashboard{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+
+  /* ── Navigation ── */
+  nav{padding:10px 14px;gap:8px;flex-wrap:nowrap}
+  .nav-brand{font-size:14px;flex-shrink:0}
+  .nav-right{gap:5px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .nav-right::-webkit-scrollbar{display:none}
+  .nav-status{display:none} /* cacher le statut MQTT en mobile */
+  .nbtn{padding:7px 10px;font-size:10px;white-space:nowrap;flex-shrink:0}
+  /* Cacher les boutons secondaires sur mobile */
+  #btnMqtt{display:none!important}
+  #btnCredentials{display:none!important}
+  #roleTag{display:none!important}
+
+  /* ── Barre de stats : 3 colonnes ── */
+  .stats-bar{grid-template-columns:repeat(3,1fr);overflow:hidden}
+  .stat{padding:9px 10px}
+  .stat-v{font-size:17px}
+  .stat-l{font-size:8px}
+
+  /* ── Onglets : scroll horizontal fluide ── */
+  .tabs{padding:8px 14px 0;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:8px 13px;font-size:11px;flex-shrink:0}
+
+  /* ── Vues : padding réduit ── */
+  .view{padding:12px 14px}
+
+  /* ── Masquer la sidebar (remplacée par onglet Historique) ── */
+  .two-col{display:block}
+  .sidebar{display:none}
+  #tourneesPanel{display:none!important}
+
+  /* ── Grille machines : 1 colonne pleine largeur ── */
+  .machines-grid{grid-template-columns:1fr;gap:10px}
+
+  /* ── Cartes machines : plus grandes et lisibles ── */
+  .card-name{font-size:14px}
+  .card-body{padding:13px}
+  .bar-bg{height:8px;border-radius:4px}
+  .bar-fill{height:8px}
+  .card-foot{padding:9px 13px;font-size:11px}
+
+  /* ── Ingrédients : 1 colonne ── */
+  .ing-layout{grid-template-columns:1fr}
+
+  /* ── Stats / CA / Boissons : 1 colonne ── */
+  .stats-layout,.ca-layout,.drinks-layout{grid-template-columns:1fr}
+
+  /* ── Historique : adapté mobile ── */
+  .histo-header{flex-direction:column;align-items:flex-start;gap:8px}
+  .histo-kpis{grid-template-columns:repeat(3,1fr)}
+  .histo-filters{flex-direction:column}
+  .histo-search{min-width:unset;width:100%}
+  .histo-select{width:100%}
+  /* Cacher colonnes "Détail" et "Effectué par" sur petits écrans */
+  .histo-table th:nth-child(4),.histo-table td:nth-child(4){display:none}
+  .histo-table th,.histo-table td{padding:9px 10px;font-size:11px}
+  .histo-table-wrap{overflow-x:auto}
+
+  /* ── Modals : plein écran ── */
+  .modal-box{width:95vw;max-height:90vh;overflow-y:auto;margin:auto}
+  .edit-modal-inner{max-height:85vh;overflow-y:auto}
+
+  /* ── Alertes/Telegram ── */
+  #v-alertes>div:first-child{grid-template-columns:1fr}
+
+  /* ── PWA bannière ── */
+  #pwaBanner{flex-direction:column;align-items:flex-start;gap:8px}
+  #iosInstallBanner{flex-direction:column;align-items:flex-start}
+
+  /* ── Barre de navigation du bas (app-like) ── */
+  .mobile-bottom-nav{
+    display:flex!important;
+    position:fixed;bottom:0;left:0;right:0;
+    height:calc(58px + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);
+    background:var(--bg2);
+    border-top:1px solid var(--border);
+    z-index:100;
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  }
+  .mobile-bottom-nav button{
+    flex:1;background:none;border:none;color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;cursor:pointer;font-family:var(--mono);font-size:9px;
+    padding:8px 4px;transition:.15s;-webkit-tap-highlight-color:transparent;
+  }
+  .mobile-bottom-nav button.mbnav-active{color:var(--accent)}
+  .mobile-bottom-nav button span.mbnav-icon{font-size:20px;line-height:1}
+  .mobile-bottom-nav button span.mbnav-label{font-size:9px;letter-spacing:.03em}
+
+  /* Cacher les tabs du haut sur mobile (remplacés par la bottom nav) */
+  .tabs{display:none}
+
+  /* ── Tech view mobile ── */
+  .tech-inner{padding:12px 14px}
+  .tc{margin-bottom:10px}
+  .tc-name{font-size:15px}
+  .tc-actions{gap:6px}
+  .tc-rfbtn{padding:8px 12px;font-size:11px}
+  .tech-pos-bar{padding:10px 14px}
+}
 /* ══ LOGIN ══ */
 #loginScreen{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px}
 #loginScreen::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 20%,rgba(79,156,249,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 80% 80%,rgba(62,207,142,.05) 0%,transparent 70%);pointer-events:none}
@@ -1291,6 +1401,8 @@ function _applyRole(role,workspaceName,techName){
     tag.textContent=isAdmin?'ADMIN':(techName?'TECH — '+techName:'TECHNICIEN');
   }
   tag.className='role-badge '+(isAdmin?'role-admin':'role-tech');
+  // Afficher/cacher bottom nav mobile selon le rôle
+  setTimeout(initMobileNav, 100);
   // Afficher le nom du tech dans la vue technicien
   const pill=document.getElementById('techNamePill');
   if(pill){
@@ -3012,6 +3124,38 @@ function connectMQTT(){
   // Sinon on reste sur l'écran de login (affiché par défaut)
 })();
 
+// ══ MOBILE BOTTOM NAV ══
+function mbnav(name, btn){
+  // Changer l'onglet actif
+  const tabBtn = document.querySelector(`.tabs .tab:nth-child(${
+    {machines:1,ingredients:2,stats:3,carte:4,ca:5,boissons:6,alertes:7,historique:8}[name]
+  })`);
+  if(tabBtn) switchTab(name, tabBtn);
+  // Mettre à jour la bottom nav
+  document.querySelectorAll('.mobile-bottom-nav button').forEach(b => b.classList.remove('mbnav-active'));
+  if(btn) btn.classList.add('mbnav-active');
+}
+
+function showMobileNav(show){
+  const nav = document.getElementById('mobileBottomNav');
+  if(nav && window.innerWidth <= 768) nav.style.display = show ? 'flex' : 'none';
+}
+
+// Afficher la bottom nav sur mobile quand le dashboard est visible
+function initMobileNav(){
+  if(window.innerWidth <= 768){
+    showMobileNav(true);
+  }
+}
+window.addEventListener('resize', () => {
+  if(window.innerWidth > 768){
+    const nav = document.getElementById('mobileBottomNav');
+    if(nav) nav.style.display = 'none';
+  } else {
+    showMobileNav(true);
+  }
+});
+
 // ══ PWA — Service Worker + Install ══
 let pwaInstallPrompt = null;
 
@@ -3079,5 +3223,29 @@ if('serviceWorker' in navigator){
 }
 </script>
 <div id="toastContainer"></div>
+
+<!-- Barre de navigation mobile (cachée sur desktop) -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" style="display:none">
+  <button onclick="mbnav('machines',this)" class="mbnav-active" id="mbn-machines">
+    <span class="mbnav-icon">🖥</span>
+    <span class="mbnav-label">Machines</span>
+  </button>
+  <button onclick="mbnav('ingredients',this)" id="mbn-ingredients">
+    <span class="mbnav-icon">☕</span>
+    <span class="mbnav-label">Ingr.</span>
+  </button>
+  <button onclick="mbnav('carte',this)" id="mbn-carte">
+    <span class="mbnav-icon">🗺</span>
+    <span class="mbnav-label">Carte</span>
+  </button>
+  <button onclick="mbnav('historique',this)" id="mbn-historique">
+    <span class="mbnav-icon">📋</span>
+    <span class="mbnav-label">Historique</span>
+  </button>
+  <button onclick="mbnav('alertes',this)" id="mbn-alertes">
+    <span class="mbnav-icon">🔔</span>
+    <span class="mbnav-label">Alertes</span>
+  </button>
+</nav>
 </body>
 </html>
