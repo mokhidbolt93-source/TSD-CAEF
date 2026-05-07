@@ -845,6 +845,7 @@ body.light #techView{background:var(--bg)}
       <option value="">Tous les types</option>
       <option value="refill_all">Remplissage complet</option>
       <option value="refill_eau">Remplissage eau</option>
+      <option value="refill_ing">Ingrédient</option>
       <option value="note">Note technicien</option>
       <option value="edit">Modification</option>
       <option value="create">Création</option>
@@ -1780,16 +1781,15 @@ function deleteMachine(id){
 }
 function histTypeLabel(type,detail){
   const ing={cafe:'Café',sucre:'Sucre',lait:'Lait',choco:'Chocolat',eau:'Eau',gobelets:'Gobelets'};
-  if(type==='refill_all')return '✓ Tout rempli';
-  if(type==='refill_eau')return '💧 Eau remplie';
+  if(type==='refill_all'||type==='all')return '✅ Tout rempli';
+  if(type==='refill_eau'||type==='eau')return '💧 Eau remplie';
   if(type==='refill_ing')return '↺ '+(detail?.label||ing[detail?.ing]||'Ingrédient')+' rempli';
+  if(ing[type])return '↺ '+ing[type]+' rempli'; // anciens enregistrements bruts
   if(type==='create')return '➕ Machine créée';
   if(type==='delete')return '🗑 Machine supprimée';
   if(type==='edit')return '✏ Machine modifiée';
-  if(type==='gps_update')return '📍 GPS mis à jour';
+  if(type==='gps_update'||type==='gps_position')return '📍 GPS mis à jour';
   if(type==='note')return '📝 Note : '+(detail?.note?detail.note.slice(0,40)+(detail.note.length>40?'…':''):'');
-  if(type==='all')return '✓ Tout rempli';
-  if(type==='eau')return '💧 Eau remplie';
   return type;
 }
 function histDotColor(type){
@@ -1801,11 +1801,18 @@ function histDotColor(type){
   if(type==='edit'||type==='gps_update')return 'var(--amber)';
   return 'var(--muted)';
 }
-function logRefill(machineId,type){
+function logRefill(machineId,type,extraDetail){
   const m=machines[machineId];
   const who=currentUsername||(currentRole==='superadmin'?'Super Admin':currentRole==='admin'?'Admin':'Technicien');
-  // Ajouter en tête (format local compatible avec le rendu unifié)
-  refillLog.unshift({machine_name:m?m.name:machineId,machine_id:machineId,type,done_by:who,done_at:new Date().toISOString(),detail:{}});
+  const ingLabels={cafe:'Café',sucre:'Sucre',lait:'Lait',choco:'Chocolat',eau:'Eau',gobelets:'Gobelets'};
+  // Normaliser le type pour les ingrédients individuels
+  let logType=type;
+  let detail=extraDetail||{};
+  if(type!=='all'&&type!=='eau'&&type!=='refill_all'&&type!=='refill_eau'&&ingLabels[type]){
+    logType='refill_ing';
+    detail={ing:type,label:ingLabels[type],...detail};
+  }
+  refillLog.unshift({machine_name:m?m.name:machineId,machine_id:machineId,type:logType,done_by:who,done_at:new Date().toISOString(),detail});
   renderSidebarHistory();
 }
 function renderSidebarHistory(){
@@ -1856,24 +1863,38 @@ function renderRefillLog(){
 }
 
 // ══ HISTORIQUE TAB ══
-function histoTypeBadge(type){
+function histoTypeBadge(type,detail){
+  const ingLabels={cafe:'Café',sucre:'Sucre',lait:'Lait',choco:'Chocolat',eau:'Eau',gobelets:'Gobelets'};
+  if(type==='refill_ing'){
+    const ingName=detail?.label||ingLabels[detail?.ing]||'Ingrédient';
+    return `<span class="htype-badge htype-refill_eau">↺ ${escHtml(ingName)}</span>`;
+  }
   const map={
-    refill_all:['htype-refill','✅ Remplissage complet'],
+    refill_all:['htype-refill','✅ Tout rempli'],
     refill_eau:['htype-refill_eau','💧 Eau'],
     note:['htype-note','📝 Note'],
-    edit:['htype-edit','✏️ Modification'],
+    edit:['htype-edit','✏️ Modif.'],
     create:['htype-create','➕ Création'],
     delete:['htype-delete','🗑 Suppression'],
-    gps_position:['htype-other','📍 Position GPS'],
+    gps_position:['htype-other','📍 GPS'],
+    all:['htype-refill','✅ Tout rempli'],
+    eau:['htype-refill_eau','💧 Eau'],
   };
+  // Ingrédients bruts (anciens enregistrements)
+  if(!map[type]&&ingLabels[type])return `<span class="htype-badge htype-refill_eau">↺ ${ingLabels[type]}</span>`;
   const [cls,label]=map[type]||['htype-other',type||'—'];
   return `<span class="htype-badge ${cls}">${label}</span>`;
 }
 function histoDetail(type,detail){
-  if(!detail||!Object.keys(detail).length)return '—';
+  const ingLabels={cafe:'Café',sucre:'Sucre',lait:'Lait',choco:'Chocolat',eau:'Eau',gobelets:'Gobelets'};
+  if(!detail||!Object.keys(detail).length){
+    if(ingLabels[type])return ingLabels[type]+' rempli';
+    return '—';
+  }
   if(type==='note')return escHtml((detail.note||'').slice(0,80)+(detail.note&&detail.note.length>80?'…':''));
-  if(type==='refill_all')return 'Tous les ingrédients';
-  if(type==='refill_eau')return 'Eau / nettoyage';
+  if(type==='refill_all'||type==='all')return 'Tous les ingrédients';
+  if(type==='refill_eau'||type==='eau')return 'Eau / nettoyage';
+  if(type==='refill_ing')return escHtml(detail.label||ingLabels[detail.ing]||detail.ing||'—')+' rempli';
   if(type==='edit'&&detail.name)return 'Renommé → '+escHtml(detail.name);
   if(type==='gps_position')return `Lat ${(detail.lat||0).toFixed(4)}, Lng ${(detail.lng||0).toFixed(4)}`;
   const parts=Object.entries(detail).filter(([k])=>!['by'].includes(k)).map(([k,v])=>`${k}: ${v}`);
@@ -1933,7 +1954,8 @@ function filterHistorique(){
   if(kpiEl){
     const total=filtered.length;
     const today=filtered.filter(r=>{const dt=r.done_at?new Date(r.done_at):(r.ts?new Date(r.ts):null);return dt&&dt.toDateString()===new Date().toDateString();}).length;
-    const refills=filtered.filter(r=>r.type==='refill_all'||r.type==='refill_eau').length;
+    const ingLabelsK={cafe:1,sucre:1,lait:1,choco:1,gobelets:1};
+    const refills=filtered.filter(r=>r.type==='refill_all'||r.type==='refill_eau'||r.type==='refill_ing'||r.type==='all'||r.type==='eau'||ingLabelsK[r.type]).length;
     const notes=filtered.filter(r=>r.type==='note').length;
     const techs=[...new Set(filtered.map(r=>r.done_by||r.who).filter(Boolean))].length;
     kpiEl.innerHTML=`
@@ -1963,7 +1985,7 @@ function filterHistorique(){
     return `<tr>
       <td style="color:var(--muted);white-space:nowrap">${when}</td>
       <td style="color:var(--accent);font-weight:600">${escHtml(name)}</td>
-      <td>${histoTypeBadge(type)}</td>
+      <td>${histoTypeBadge(type,detail)}</td>
       <td style="color:var(--muted2);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${histoDetail(type,detail)}</td>
       <td style="color:var(--purple)">${escHtml(who)}</td>
     </tr>`;
