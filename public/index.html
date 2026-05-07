@@ -886,6 +886,7 @@ body.light #techView{background:var(--bg)}
       <option value="refill_all">Remplissage complet</option>
       <option value="refill_eau">Remplissage eau</option>
       <option value="refill_ing">Ingrédient</option>
+      <option value="done">Machine faite ✅</option>
       <option value="note">Note technicien</option>
       <option value="edit">Modification</option>
       <option value="create">Création</option>
@@ -1825,6 +1826,7 @@ function histTypeLabel(type,detail){
   if(type==='refill_eau'||type==='eau')return '💧 Eau remplie';
   if(type==='refill_ing')return '↺ '+(detail?.label||ing[detail?.ing]||'Ingrédient')+' rempli';
   if(ing[type])return '↺ '+ing[type]+' rempli'; // anciens enregistrements bruts
+  if(type==='done')return '✅ Machine marquée FAITE';
   if(type==='create')return '➕ Machine créée';
   if(type==='delete')return '🗑 Machine supprimée';
   if(type==='edit')return '✏ Machine modifiée';
@@ -1836,6 +1838,7 @@ function histDotColor(type){
   if(type==='refill_all'||type==='all')return 'var(--green)';
   if(type==='refill_eau'||type==='eau')return '#60c3f9';
   if(type==='refill_ing')return 'var(--accent)';
+  if(type==='done')return 'var(--green)';
   if(type==='delete')return 'var(--red)';
   if(type==='create')return 'var(--green)';
   if(type==='edit'||type==='gps_update')return 'var(--amber)';
@@ -1912,6 +1915,7 @@ function histoTypeBadge(type,detail){
   const map={
     refill_all:['htype-refill','✅ Tout rempli'],
     refill_eau:['htype-refill_eau','💧 Eau'],
+    done:['htype-refill','✅ Fait'],
     note:['htype-note','📝 Note'],
     edit:['htype-edit','✏️ Modif.'],
     create:['htype-create','➕ Création'],
@@ -2105,8 +2109,29 @@ function refillIng(id,ing){
 
 // ══ VISITE TECHNICIEN ══
 function toggleVisited(id){
-  if(techVisited.has(id))techVisited.delete(id);
-  else techVisited.add(id);
+  const m=machines[id];
+  if(techVisited.has(id)){
+    // Démarquer — on ne log pas la démarque
+    techVisited.delete(id);
+  } else {
+    // Marquer fait → log dans historique + serveur
+    techVisited.add(id);
+    const who=currentUsername||(currentRole==='tech'?'Technicien':'Inconnu');
+    const machineName=m?m.name:id;
+    // Ajout immédiat dans refillLog local
+    refillLog.unshift({
+      machine_name:machineName,
+      machine_id:id,
+      type:'done',
+      done_by:who,
+      done_at:new Date().toISOString(),
+      detail:{by:who}
+    });
+    renderSidebarHistory();
+    // Envoi au serveur
+    logIntervention(id,machineName,'done',{by:who});
+    toast('✅ '+machineName+' marquée comme faite','success');
+  }
   renderTech();
 }
 
