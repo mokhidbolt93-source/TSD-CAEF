@@ -369,20 +369,25 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 
 @media(max-width:768px){
 
-  /* ── Safe area iPhone ── */
+  /* ── Safe areas iPhone (notch haut + barre home bas) ── */
   #dashboard{padding-bottom:calc(75px + env(safe-area-inset-bottom,0px))}
 
   /* ════════════════════════════
-     NAV DU HAUT — minimale
+     NAV DU HAUT — minimale + safe area
      ════════════════════════════ */
   nav{
-    padding:0 12px;
-    height:44px;
-    min-height:44px;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-left:12px;
+    padding-right:12px;
+    padding-bottom:0;
+    height:calc(44px + env(safe-area-inset-top,0px));
+    min-height:calc(44px + env(safe-area-inset-top,0px));
     gap:0;
     justify-content:space-between;
     flex-wrap:nowrap;
     overflow:hidden;
+    /* Fond opaque pour couvrir derrière la barre système */
+    background:rgba(11,13,18,.98);
   }
   .nav-brand{font-size:13px;letter-spacing:-.3px;flex-shrink:0}
   /* Cacher TOUT sauf le strict minimum */
@@ -470,6 +475,9 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
   .tech-inner{padding:12px 14px}
   .tc-actions{gap:6px}
   .tc-rfbtn{padding:9px 12px;font-size:11px;min-height:42px}
+
+  /* ── Cacher bannière notifications (trop encombrante sur mobile) ── */
+  #notifBanner{display:none!important}
 
   /* ── PWA bannières ── */
   #pwaBanner,#iosInstallBanner{flex-direction:column;gap:8px}
