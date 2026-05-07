@@ -396,7 +396,18 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
   #btnCredentials{display:none!important}
   #btnAddMachine{display:none!important}
   #btnClients{display:none!important}
-  #btnTechPos{display:none!important}
+  #btnTechPos{
+    padding:0;
+    width:34px;height:34px;
+    display:flex;
+    align-items:center;justify-content:center;
+    font-size:0;
+    border-radius:8px;
+    flex-shrink:0;
+    border-color:rgba(62,207,142,.4);
+    color:var(--green);
+  }
+  #btnTechPos::before{content:'📍';font-size:16px}
   #roleTag{display:none!important}
   #btnTheme{display:none!important}
   /* Nav right : Tech + Déconnexion seulement */
@@ -893,7 +904,7 @@ body.light #techView{background:var(--bg)}
     <button class="nbtn tech" id="btnTech" onclick="toggleTech()">🔧 Technicien</button>
     <button class="nbtn add" id="btnAddMachine" onclick="retourConfig()">+ Machine</button>
     <button class="nbtn" id="btnMqtt" onclick="document.getElementById('mqttModal').classList.add('open')">⚙ MQTT</button>
-    <button class="nbtn" id="btnTechPos" onclick="openTechPosModal()" style="display:none;border-color:rgba(62,207,142,.4);color:var(--green)">📍 Techniciens</button>
+    <button class="nbtn" id="btnTechPos" onclick="openTechPosModal()" style="display:none;border-color:rgba(62,207,142,.4);color:var(--green)" data-techpos>📍 Techniciens</button>
     <button class="nbtn" id="btnCredentials" onclick="openCredentialsModal()" style="border-color:rgba(167,139,250,.4);color:var(--purple)">🔑 Comptes</button>
     <button class="nbtn" id="btnTheme" onclick="toggleTheme()" title="Thème clair/sombre">☀</button>
     <span id="roleTag" class="role-badge role-admin">ADMIN</span>
@@ -1496,6 +1507,9 @@ function _applyRole(role,workspaceName,techName){
   tag.className='role-badge '+(isAdmin?'role-admin':'role-tech');
   // Afficher/cacher bottom nav mobile selon le rôle
   setTimeout(initMobileNav, 100);
+  // Auto-refresh historique pour admin
+  if(role==='admin'||role==='superadmin'){startHistoryAutoRefresh();}
+  else{stopHistoryAutoRefresh();}
   // Afficher le nom du tech dans la vue technicien
   const pill=document.getElementById('techNamePill');
   if(pill){
@@ -2316,14 +2330,12 @@ function refillIng(id,ing){
 function toggleVisited(id){
   const m=machines[id];
   if(techVisited.has(id)){
-    // Démarquer — on ne log pas la démarque
     techVisited.delete(id);
   } else {
-    // Marquer fait → log dans historique + serveur
     techVisited.add(id);
     const who=currentUsername||(currentRole==='tech'?'Technicien':'Inconnu');
     const machineName=m?m.name:id;
-    // Ajout immédiat dans refillLog local
+    // Ajout dans refillLog local
     refillLog.unshift({
       machine_name:machineName,
       machine_id:id,
@@ -2335,6 +2347,8 @@ function toggleVisited(id){
     renderSidebarHistory();
     // Envoi au serveur
     logIntervention(id,machineName,'done',{by:who});
+    // Notification navigateur
+    sendBrowserNotif('✅ Machine faite — '+machineName, who+' a marqué cette machine comme faite');
     toast('✅ '+machineName+' marquée comme faite','success');
   }
   renderTech();
@@ -3238,7 +3252,32 @@ function mbnav(name, btn){
   document.querySelectorAll('.mobile-bottom-nav button').forEach(b=>b.classList.remove('mbnav-active'));
   if(btn) btn.classList.add('mbnav-active');
 }
-function initMobileNav(){} // plus rien à faire, CSS gère tout
+function initMobileNav(){} // CSS gère la visibilité
+
+// ══ AUTO-REFRESH HISTORIQUE (admin) ══
+let _histRefreshInterval=null;
+function startHistoryAutoRefresh(){
+  if(_histRefreshInterval)return;
+  _histRefreshInterval=setInterval(async()=>{
+    if(!authToken||(currentRole!=='admin'&&currentRole!=='superadmin'))return;
+    const hRes=await authFetch('/api/history?limit=500');
+    if(!hRes||!hRes.ok)return;
+    const fresh=await hRes.json();
+    // Détecter de nouvelles entrées "done" depuis le dernier refresh
+    const lastTs=refillLog.find(r=>r.type==='done')?.done_at||null;
+    const newDone=fresh.filter(r=>r.type==='done'&&(!lastTs||r.done_at>lastTs));
+    newDone.forEach(r=>{
+      sendBrowserNotif('✅ Machine faite — '+(r.machine_name||''),
+        (r.done_by||'Technicien')+' a marqué cette machine comme faite');
+      addAlert((r.machine_name||'Machine')+' marquée FAITE par '+(r.done_by||'tech'),'info');
+    });
+    refillLog=fresh;
+    renderSidebarHistory();
+  },30000); // toutes les 30 secondes
+}
+function stopHistoryAutoRefresh(){
+  if(_histRefreshInterval){clearInterval(_histRefreshInterval);_histRefreshInterval=null;}
+}
 
 // ══ PWA — Service Worker + Install ══
 let pwaInstallPrompt = null;
