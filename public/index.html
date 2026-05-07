@@ -1688,7 +1688,7 @@ function _applyRole(role,workspaceName,techName){
   else{stopHistoryAutoRefresh();}
   // Onglet Tournées — visible pour admin et tech
   const tabT=document.getElementById('tabTournees');
-  if(tabT)tabT.style.display=isAdmin||role==='tech'?'':'none';
+  if(tabT)tabT.style.display=isAdmin||role==='tech'?'inline-block':'none';
   // Bouton nouvelle tournée — admin seulement
   const btnNT=document.getElementById('btnNewTour');
   if(btnNT)btnNT.style.display=isAdmin?'':'none';
