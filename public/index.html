@@ -101,6 +101,16 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:13px 2
 .nbtn.add{border-color:rgba(62,207,142,.4);color:var(--green)}.nbtn.add:hover{background:rgba(62,207,142,.07)}
 .nbtn.tech{border-color:rgba(167,139,250,.4);color:var(--purple)}.nbtn.tech:hover{background:rgba(167,139,250,.07)}
 .nbtn.tech.active{background:rgba(167,139,250,.15);border-color:var(--purple)}
+/* ══ PWA INSTALL BANNER ══ */
+#pwaBanner{display:none;align-items:center;justify-content:space-between;padding:10px 20px;background:linear-gradient(90deg,rgba(79,156,249,.12),rgba(62,207,142,.08));border-bottom:1px solid rgba(79,156,249,.25);gap:12px;flex-wrap:wrap}
+.pwa-banner-text{font-family:var(--mono);font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px}
+.pwa-banner-icon{font-size:22px}
+.pwa-banner-btn{background:var(--accent);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-family:var(--font);font-weight:700;font-size:12px;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.pwa-banner-btn:hover{opacity:.88}
+.pwa-banner-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px;line-height:1}
+#iosInstallBanner{display:none;align-items:center;justify-content:space-between;padding:10px 20px;background:linear-gradient(90deg,rgba(167,139,250,.1),rgba(79,156,249,.08));border-bottom:1px solid rgba(167,139,250,.2);gap:10px}
+.ios-banner-text{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.5}
+.ios-banner-text strong{color:var(--text)}
 .stats-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
 .stat{background:var(--bg);padding:11px 14px}
 .stat-v{font-size:20px;font-weight:700;line-height:1}
@@ -688,6 +698,26 @@ body.light #techView{background:var(--bg)}
     <button class="nbtn" onclick="doLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red)">Déconnexion</button>
   </div>
 </nav>
+<!-- Bannière installation Android -->
+<div id="pwaBanner">
+  <div class="pwa-banner-text">
+    <span class="pwa-banner-icon">📲</span>
+    <span><strong>Installer NECTA Monitor</strong> — accès rapide depuis votre écran d'accueil, comme une vraie app</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="pwa-banner-btn" onclick="installPWA()">Installer l'app</button>
+    <button class="pwa-banner-close" onclick="dismissPWABanner()">✕</button>
+  </div>
+</div>
+<!-- Bannière installation iOS -->
+<div id="iosInstallBanner">
+  <div class="pwa-banner-text" style="font-size:18px">🍎</div>
+  <div class="ios-banner-text">
+    <strong>Installer sur iPhone</strong><br>
+    Appuyez sur <strong>⎦↑⎡ Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>
+  </div>
+  <button class="pwa-banner-close" onclick="document.getElementById('iosInstallBanner').style.display='none'">✕</button>
+</div>
 <div class="stats-bar">
   <div class="stat"><div class="stat-v" id="s1" style="color:var(--green)">0</div><div class="stat-l">OK</div></div>
   <div class="stat"><div class="stat-v" id="s2" style="color:var(--amber)">0</div><div class="stat-l">À remplir</div></div>
@@ -2957,7 +2987,64 @@ function connectMQTT(){
   // Sinon on reste sur l'écran de login (affiché par défaut)
 })();
 
-// ══ PWA — Service Worker ══
+// ══ PWA — Service Worker + Install ══
+let pwaInstallPrompt = null;
+
+// Capture l'événement d'installation Android/Chrome
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  pwaInstallPrompt = e;
+  // Afficher la bannière si pas déjà rejeté
+  if(!localStorage.getItem('pwaBannerDismissed')){
+    const banner = document.getElementById('pwaBanner');
+    if(banner) banner.style.display = 'flex';
+  }
+});
+
+// Masquer la bannière une fois installé
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('pwaBanner');
+  if(banner) banner.style.display = 'none';
+  pwaInstallPrompt = null;
+  toast('✅ NECTA Monitor installé sur votre appareil !','success');
+});
+
+function installPWA(){
+  if(!pwaInstallPrompt) return;
+  pwaInstallPrompt.prompt();
+  pwaInstallPrompt.userChoice.then(result => {
+    if(result.outcome === 'accepted'){
+      const banner = document.getElementById('pwaBanner');
+      if(banner) banner.style.display = 'none';
+    }
+    pwaInstallPrompt = null;
+  });
+}
+
+function dismissPWABanner(){
+  const banner = document.getElementById('pwaBanner');
+  if(banner) banner.style.display = 'none';
+  localStorage.setItem('pwaBannerDismissed','1');
+}
+
+// Détecter iOS et afficher instructions spécifiques
+(function detectIOS(){
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandalone = window.navigator.standalone === true;
+  const dismissed = localStorage.getItem('iosBannerDismissed');
+  if(isIOS && !isInStandalone && !dismissed){
+    setTimeout(() => {
+      const b = document.getElementById('iosInstallBanner');
+      if(b) b.style.display = 'flex';
+      const closeBtn = b && b.querySelector('.pwa-banner-close');
+      if(closeBtn) closeBtn.onclick = () => {
+        b.style.display='none';
+        localStorage.setItem('iosBannerDismissed','1');
+      };
+    }, 3000);
+  }
+})();
+
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
