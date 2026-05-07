@@ -726,6 +726,53 @@ body.light #techView{background:var(--bg)}
 /* Tech name in tech view */
 #techNamePill{font-family:var(--mono);font-size:11px;color:var(--purple);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:99px;padding:3px 10px;margin-left:6px}
 
+/* ══ TOURNÉES ══ */
+.tour-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.tour-title{font-size:18px;font-weight:700;color:var(--text)}
+.tour-sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+.tour-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tour-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;transition:.15s;cursor:pointer}
+.tour-card:hover{border-color:var(--accent);box-shadow:0 0 0 1px rgba(79,156,249,.15)}
+.tour-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.tour-card-date{font-size:15px;font-weight:700;color:var(--text)}
+.tour-card-tech{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:3px}
+.tour-badge{padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700;font-family:var(--mono);text-transform:uppercase}
+.tour-badge-pending{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.tour-badge-active{background:rgba(79,156,249,.15);color:var(--accent);border:1px solid rgba(79,156,249,.25)}
+.tour-badge-done{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.25)}
+.tour-machines-list{display:flex;flex-direction:column;gap:4px}
+.tour-machine-row{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:8px;font-size:12px;background:rgba(255,255,255,.03)}
+.tour-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tour-machine-name{flex:1;color:var(--text);font-family:var(--mono);font-size:11px}
+.tour-machine-status{font-size:13px}
+.tour-card-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.tour-btn{padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;transition:.12s}
+.tour-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tour-btn-del{border-color:rgba(239,68,68,.3);color:var(--red)}
+.tour-btn-del:hover{background:rgba(239,68,68,.08)}
+.tour-btn-nav{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tour-empty{text-align:center;padding:60px 20px;color:var(--muted);font-family:var(--mono);font-size:12px}
+/* Panneau tournée du jour dans tech view */
+.tech-tour-banner{background:rgba(79,156,249,.07);border:1px solid rgba(79,156,249,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.tech-tour-banner-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.tech-tour-machine{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;margin-bottom:4px;cursor:pointer;transition:.1s}
+.tech-tour-machine:hover{background:rgba(255,255,255,.04)}
+.tech-tour-machine.ttm-done{opacity:.5}
+.tech-tour-machine-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tech-tour-machine-name{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.tech-tour-machine-addr{font-size:10px;color:var(--muted);font-family:var(--mono)}
+/* Notifications config */
+.notif-config-panel{background:rgba(79,156,249,.05);border:1px solid rgba(79,156,249,.15);border-radius:12px;padding:16px;margin-bottom:16px}
+.notif-config-title{font-size:12px;font-weight:700;color:var(--accent);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.notif-config-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.notif-config-label{font-size:11px;color:var(--muted);min-width:140px}
+.notif-config-in{flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--text);font-family:var(--mono)}
+.notif-config-in:focus{outline:none;border-color:var(--accent)}
+/* Photo mini */
+.photo-capture-btn{padding:6px 12px;border-radius:8px;font-size:11px;border:1px dashed var(--border);background:none;color:var(--muted);cursor:pointer;transition:.12s;display:flex;align-items:center;gap:5px}
+.photo-capture-btn:hover{border-color:var(--accent);color:var(--accent)}
+.photo-preview{width:80px;height:60px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+
 /* ══ PRINT ══ */
 @media print{
   #loginScreen,#wsView,nav,.tabs,.stats-bar,#techView,.modal-bg,#toastContainer,#notifBanner,.del-btn,.nbtn,button{display:none!important}
@@ -949,6 +996,7 @@ body.light #techView{background:var(--bg)}
   <button class="tab" onclick="switchTab('boissons',this)">Boissons</button>
   <button class="tab" onclick="switchTab('alertes',this)">Alertes & Telegram</button>
   <button class="tab" onclick="switchTab('historique',this)">📋 Historique</button>
+  <button class="tab" id="tabTournees" onclick="switchTab('tournees',this)" style="display:none">🗺 Tournées</button>
 </div>
 
 <div id="notifBanner" class="hidden">
@@ -1051,6 +1099,30 @@ body.light #techView{background:var(--bg)}
 </div>
 
 <div class="view" id="v-alertes">
+  <!-- Panneau notifications email -->
+  <div class="notif-config-panel" id="notifEmailPanel">
+    <div class="notif-config-title">📧 Notifications Email automatiques</div>
+    <div class="notif-config-row">
+      <span class="notif-config-label">Email destinataire</span>
+      <input class="notif-config-in" id="notifEmail" type="email" placeholder="admin@entreprise.com" oninput="notifConfigDirty=true">
+      <button class="tour-btn" onclick="testNotifEmail()" style="white-space:nowrap">Tester</button>
+    </div>
+    <div class="notif-config-row">
+      <span class="notif-config-label">Rappel maintenance</span>
+      <input class="notif-config-in" id="notifMaintenanceDays" type="number" min="0" max="60" value="7" style="width:70px;flex:none" oninput="notifConfigDirty=true">
+      <span style="font-size:11px;color:var(--muted)">jours sans visite (0 = désactivé)</span>
+    </div>
+    <div class="notif-config-row">
+      <span class="notif-config-label">Adresse de départ</span>
+      <input class="notif-config-in" id="notifStartAddress" type="text" placeholder="123 rue de la Paix, Paris" oninput="notifConfigDirty=true">
+      <button class="tour-btn" onclick="geocodeStartAddress()" title="Localiser l'adresse">📍</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+      <button class="tour-btn tour-btn-nav" onclick="saveNotifConfig()">💾 Enregistrer</button>
+      <span id="notifConfigStatus" style="font-size:11px;color:var(--green);font-family:var(--mono)"></span>
+    </div>
+    <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:8px">Nécessite la configuration de RESEND_API_KEY sur le serveur · Alertes critiques envoyées toutes les heures</div>
+  </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
     <div class="telegram-panel">
       <div class="chart-title" style="margin-bottom:8px">🤖 Notifications Telegram</div>
@@ -1134,6 +1206,40 @@ body.light #techView{background:var(--bg)}
   </div>
 </div>
 
+<!-- TOURNÉES TAB -->
+<div class="view" id="v-tournees">
+  <div class="tour-header">
+    <div>
+      <div class="tour-title">🗺 Planification des tournées</div>
+      <div class="tour-sub" id="tourSubText">Assignez des machines à vos techniciens et optimisez leurs trajets</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="histo-refresh" onclick="loadTours()">⟳ Actualiser</button>
+      <button class="histo-export" id="btnNewTour" onclick="openNewTourModal()">+ Nouvelle tournée</button>
+    </div>
+  </div>
+  <!-- Filtres -->
+  <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+    <select class="histo-select" id="tourFilterPeriod" onchange="renderToursList()">
+      <option value="week">Cette semaine</option>
+      <option value="month">Ce mois</option>
+      <option value="all">Tout afficher</option>
+    </select>
+    <select class="histo-select" id="tourFilterTech" onchange="renderToursList()">
+      <option value="">Tous les techniciens</option>
+    </select>
+    <select class="histo-select" id="tourFilterStatus" onchange="renderToursList()">
+      <option value="">Tous les statuts</option>
+      <option value="pending">En attente</option>
+      <option value="active">En cours</option>
+      <option value="done">Terminée</option>
+    </select>
+  </div>
+  <div id="toursList" class="tour-grid">
+    <div class="tour-empty">Chargement…</div>
+  </div>
+</div>
+
 </div>
 
 <!-- MODE TECHNICIEN -->
@@ -1162,6 +1268,15 @@ body.light #techView{background:var(--bg)}
         <div class="tech-pos-label" id="techPosLabel">Position non encore partagée</div>
       </div>
       <button class="tech-pos-btn" onclick="shareTechPosition()">📡 Je suis ici</button>
+    </div>
+    <!-- Tournée du jour assignée par l'admin -->
+    <div class="tech-tour-banner" id="techTodayTourBanner" style="display:none">
+      <div class="tech-tour-banner-title">📋 Votre tournée du jour — <span id="techTodayTourDate"></span></div>
+      <div id="techTodayTourMachines"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="tour-btn tour-btn-nav" onclick="startTourNavigation()" id="btnStartTourNav">🗺 Démarrer la navigation</button>
+        <button class="tour-btn" onclick="markTourDone()" id="btnMarkTourDone">✅ Marquer terminée</button>
+      </div>
     </div>
     <div class="tech-toolbar">
       <button class="tech-tb-btn tb-active" id="btnSortUrg" onclick="setTechSort('urgence',this)">🚨 Par urgence</button>
@@ -1220,6 +1335,62 @@ body.light #techView{background:var(--bg)}
     </div>
 
     <button class="modal-close" onclick="document.getElementById('credentialsModal').classList.remove('open')">Fermer</button>
+  </div>
+</div>
+
+<!-- MODAL NOUVELLE TOURNÉE -->
+<div class="modal-bg" id="newTourModal">
+  <div class="modal" style="max-width:620px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="margin:0">🗺 Nouvelle tournée</h2>
+      <button class="modal-close" style="margin:0" onclick="document.getElementById('newTourModal').classList.remove('open')">✕</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:5px">TECHNICIEN</label>
+        <select class="cfg-in" id="tourTechSelect" style="margin:0">
+          <option value="">Sélectionner un technicien…</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:5px">DATE DE LA TOURNÉE</label>
+        <input class="cfg-in" id="tourDate" type="date" style="margin:0">
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:5px">POINT DE DÉPART</label>
+      <div style="display:flex;gap:8px">
+        <input class="cfg-in" id="tourStartAddress" type="text" placeholder="Adresse de départ (ou laisser vide pour le siège)" style="margin:0;flex:1">
+        <button class="tour-btn" onclick="useTourGPS()" title="Utiliser ma position GPS">📍 GPS</button>
+        <button class="tour-btn" onclick="useWorkspaceStart()" title="Utiliser l'adresse du siège">🏢</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px" id="tourStartCoords"></div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);font-family:var(--mono)">MACHINES À VISITER</label>
+        <div style="display:flex;gap:6px">
+          <button class="tour-btn" onclick="selectAllTourMachines()" style="font-size:10px">Tout sélectionner</button>
+          <button class="tour-btn tour-btn-nav" onclick="optimizeTourRoute()" style="font-size:10px">⚡ Optimiser le trajet</button>
+        </div>
+      </div>
+      <div id="tourMachineSelect" style="max-height:250px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:4px">
+        <!-- rempli par JS -->
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:5px">NOTES (optionnel)</label>
+      <textarea class="cfg-in" id="tourNotes" rows="2" placeholder="Instructions pour le technicien…" style="margin:0;resize:vertical"></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button class="cfg-btn" style="flex:1;background:var(--accent);color:#fff;border:none;font-weight:700" onclick="createTour()">✓ Créer la tournée</button>
+      <button class="modal-close" style="margin:0" onclick="document.getElementById('newTourModal').classList.remove('open')">Annuler</button>
+    </div>
   </div>
 </div>
 
@@ -1435,6 +1606,11 @@ async function loadAll(){
       if(s.thresh_warn)threshWarn=s.thresh_warn;
       document.getElementById('v_thresh_crit').textContent=threshCrit;
       document.getElementById('v_thresh_warn').textContent=threshWarn;
+      // Charger config notifications
+      const ne=document.getElementById('notifEmail');if(ne)ne.value=s.notif_email||'';
+      const nm=document.getElementById('notifMaintenanceDays');if(nm)nm.value=s.maintenance_days??7;
+      const na=document.getElementById('notifStartAddress');
+      if(na){na.value=s.start_address||'';if(s.start_lat)na.dataset.lat=s.start_lat;if(s.start_lng)na.dataset.lng=s.start_lng;}
     }
     // Charger l'historique (3 mois, 500 entrées max)
     const hRes=await authFetch('/api/history?limit=500');
@@ -1510,6 +1686,19 @@ function _applyRole(role,workspaceName,techName){
   // Auto-refresh historique pour admin
   if(role==='admin'||role==='superadmin'){startHistoryAutoRefresh();}
   else{stopHistoryAutoRefresh();}
+  // Onglet Tournées — visible pour admin et tech
+  const tabT=document.getElementById('tabTournees');
+  if(tabT)tabT.style.display=isAdmin||role==='tech'?'':'none';
+  // Bouton nouvelle tournée — admin seulement
+  const btnNT=document.getElementById('btnNewTour');
+  if(btnNT)btnNT.style.display=isAdmin?'':'none';
+  // Panneau notifications email — admin seulement
+  const notifP=document.getElementById('notifEmailPanel');
+  if(notifP)notifP.style.display=isAdmin?'':'none';
+  // Charger les tournées
+  if(isAdmin||role==='tech'){setTimeout(loadTours,500);}
+  // Tournée du jour pour le tech
+  if(role==='tech'){setTimeout(loadAndShowTechTour,600);}
   // Afficher le nom du tech dans la vue technicien
   const pill=document.getElementById('techNamePill');
   if(pill){
@@ -3234,7 +3423,7 @@ function connectMQTT(){
 // ══ MOBILE BOTTOM NAV ══
 function mbnav(name, btn){
   // Trouver le bouton tab correspondant dans la barre du haut et switcher
-  const tabMap={machines:0,ingredients:1,stats:2,carte:3,ca:4,boissons:5,alertes:6,historique:7};
+  const tabMap={machines:0,ingredients:1,stats:2,carte:3,ca:4,boissons:5,alertes:6,historique:7,tournees:8};
   const allTabs=document.querySelectorAll('.tabs .tab');
   const tabBtn=allTabs[tabMap[name]];
   if(tabBtn) switchTab(name, tabBtn);
@@ -3277,6 +3466,402 @@ function startHistoryAutoRefresh(){
 }
 function stopHistoryAutoRefresh(){
   if(_histRefreshInterval){clearInterval(_histRefreshInterval);_histRefreshInterval=null;}
+}
+
+// ══════════════════════════════════════════════
+// TOURNÉES
+// ══════════════════════════════════════════════
+
+let toursData = [];
+let _tourStartLat = null, _tourStartLng = null;
+let notifConfigDirty = false;
+
+// Haversine distance (km) entre deux points GPS
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371,dL=(lat2-lat1)*Math.PI/180,dG=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dG/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// Nearest-neighbor route optimization
+function optimizeRouteOrder(machinesList, startLat, startLng){
+  const remaining=[...machinesList];
+  const ordered=[];
+  let curLat=startLat||48.8566, curLng=startLng||2.3522;
+  while(remaining.length>0){
+    let minD=Infinity, nearestIdx=0;
+    remaining.forEach((m,i)=>{
+      if(m.lat&&m.lng){
+        const d=haversineKm(curLat,curLng,m.lat,m.lng);
+        if(d<minD){minD=d;nearestIdx=i;}
+      }
+    });
+    const next=remaining.splice(nearestIdx,1)[0];
+    ordered.push(next);
+    curLat=next.lat||curLat; curLng=next.lng||curLng;
+  }
+  return ordered;
+}
+
+// Charger les tournées depuis le serveur
+async function loadTours(){
+  const res=await authFetch('/api/tours');
+  if(!res||!res.ok)return;
+  toursData=await res.json();
+  renderToursList();
+  // Populate tech filter
+  const techSet=new Set(toursData.map(t=>t.tech_name||'').filter(Boolean));
+  const sel=document.getElementById('tourFilterTech');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Tous les techniciens</option>';
+    [...techSet].forEach(name=>sel.innerHTML+=`<option value="${name}"${name===cur?' selected':''}>${name}</option>`);
+  }
+}
+
+// Afficher la liste des tournées
+function renderToursList(){
+  const container=document.getElementById('toursList');
+  if(!container)return;
+  const period=document.getElementById('tourFilterPeriod')?.value||'week';
+  const techF=document.getElementById('tourFilterTech')?.value||'';
+  const statusF=document.getElementById('tourFilterStatus')?.value||'';
+  const now=new Date();
+  let filtered=toursData.filter(t=>{
+    const d=new Date(t.tour_date);
+    if(period==='week'){const s=new Date(now);s.setDate(now.getDate()-7);if(d<s)return false;}
+    if(period==='month'){const s=new Date(now);s.setMonth(now.getMonth()-1);if(d<s)return false;}
+    if(techF&&t.tech_name!==techF)return false;
+    if(statusF&&t.status!==statusF)return false;
+    return true;
+  });
+  if(!filtered.length){
+    container.innerHTML='<div class="tour-empty">📭 Aucune tournée trouvée</div>';
+    return;
+  }
+  container.innerHTML=filtered.map(t=>{
+    const machines=t.machines||[];
+    const done=machines.filter(m=>m.status==='done').length;
+    const badgeCls=t.status==='done'?'tour-badge-done':t.status==='active'?'tour-badge-active':'tour-badge-pending';
+    const badgeTxt=t.status==='done'?'Terminée':t.status==='active'?'En cours':'En attente';
+    const dateStr=new Date(t.tour_date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    const machineItems=machines.slice(0,5).map((m,i)=>`
+      <div class="tour-machine-row">
+        <div class="tour-num">${i+1}</div>
+        <span class="tour-machine-name">${m.name||m.id||'Machine'}</span>
+        <span class="tour-machine-status">${m.status==='done'?'✅':m.level<15?'🔴':m.level<35?'🟡':'🟢'}</span>
+      </div>`).join('');
+    const moreCount=machines.length>5?`<div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px">+${machines.length-5} autres</div>`:'';
+    return `<div class="tour-card" onclick="openTourDetail('${t.id}')">
+      <div class="tour-card-top">
+        <div>
+          <div class="tour-card-date">${dateStr}</div>
+          <div class="tour-card-tech">🔧 ${t.tech_name||'—'} · ${machines.length} machine${machines.length>1?'s':''} ${done>0?`(${done}/${machines.length} faites)`:''}</div>
+          ${t.start_address?`<div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px">📍 ${t.start_address}</div>`:''}
+        </div>
+        <span class="tour-badge ${badgeCls}">${badgeTxt}</span>
+      </div>
+      <div class="tour-machines-list">${machineItems}${moreCount}</div>
+      <div class="tour-card-actions" onclick="event.stopPropagation()">
+        <button class="tour-btn tour-btn-nav" onclick="openTourGmaps('${t.id}')">🗺 Maps</button>
+        <button class="tour-btn" onclick="editTourStatus('${t.id}','${t.status}')">✏ Statut</button>
+        <button class="tour-btn tour-btn-del" onclick="deleteTour('${t.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Ouvrir le modal de création de tournée
+async function openNewTourModal(){
+  // Remplir le sélecteur de techniciens
+  const sel=document.getElementById('tourTechSelect');
+  if(sel){
+    sel.innerHTML='<option value="">Sélectionner un technicien…</option>';
+    // Charger les techs
+    const res=await authFetch('/api/workspaces/techs');
+    if(res&&res.ok){
+      const techs=await res.json();
+      techs.forEach(t=>sel.innerHTML+=`<option value="${t.id}" data-name="${t.username}">${t.username}</option>`);
+    }
+  }
+  // Date par défaut = demain
+  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('tourDate').value=tomorrow.toISOString().split('T')[0];
+  // Remplir les machines
+  populateTourMachineSelect();
+  // Adresse de départ par défaut (workspace)
+  const startAddr=document.getElementById('notifStartAddress')?.value||'';
+  if(startAddr)document.getElementById('tourStartAddress').value=startAddr;
+  document.getElementById('tourNotes').value='';
+  document.getElementById('tourStartCoords').textContent='';
+  _tourStartLat=null;_tourStartLng=null;
+  document.getElementById('newTourModal').classList.add('open');
+}
+
+// Remplir la liste de machines dans le modal de création
+function populateTourMachineSelect(){
+  const container=document.getElementById('tourMachineSelect');
+  if(!container)return;
+  const mList=Object.entries(machines).map(([id,m])=>({id,...m})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  if(!mList.length){container.innerHTML='<div style="font-size:11px;color:var(--muted);padding:8px;font-family:var(--mono)">Aucune machine configurée</div>';return;}
+  container.innerHTML=mList.map((m,i)=>{
+    const level=Math.min(...['cafe','sucre','lait','choco','eau'].map(k=>m[k]).filter(v=>v!=null));
+    const dot=level<15?'🔴':level<35?'🟡':'🟢';
+    return `<label class="assign-tech-item" style="cursor:pointer;gap:10px" data-machine-id="${m.id}" data-machine-lat="${m.lat||''}" data-machine-lng="${m.lng||''}" data-machine-name="${(m.name||m.id).replace(/"/g,'&quot;')}" data-machine-level="${isNaN(level)?100:level}">
+      <input type="checkbox" class="assign-tech-cb tour-machine-cb" value="${m.id}" style="accent-color:var(--accent)">
+      <span>${dot}</span>
+      <span class="assign-tech-name" style="flex:1">${m.name||m.id}</span>
+      <span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${m.rue||m.ville||''}</span>
+      <span style="font-size:10px;font-family:var(--mono);color:${isNaN(level)?'var(--muted)':level<15?'var(--red)':level<35?'var(--amber)':'var(--green)'}">${isNaN(level)?'—':level+'%'}</span>
+    </label>`;
+  }).join('');
+}
+
+function selectAllTourMachines(){
+  document.querySelectorAll('.tour-machine-cb').forEach(cb=>cb.checked=true);
+}
+
+// Optimiser le trajet des machines sélectionnées
+function optimizeTourRoute(){
+  const checked=[...document.querySelectorAll('.tour-machine-cb:checked')];
+  if(!checked.length){toast('Sélectionnez au moins une machine','warn');return;}
+  const startLat=_tourStartLat||parseFloat(document.getElementById('notifStartAddress')?.dataset?.lat)||48.8566;
+  const startLng=_tourStartLng||parseFloat(document.getElementById('notifStartAddress')?.dataset?.lng)||2.3522;
+  // Récupérer les données machines
+  const mData=checked.map(cb=>{
+    const lbl=cb.closest('label');
+    return{id:cb.value,lat:parseFloat(lbl?.dataset?.machineLat)||null,lng:parseFloat(lbl?.dataset?.machineLng)||null,name:lbl?.dataset?.machineName||cb.value,level:parseFloat(lbl?.dataset?.machineLevel)||100};
+  });
+  const optimized=optimizeRouteOrder(mData,startLat,startLng);
+  // Réordonner les checkboxes dans le DOM
+  const container=document.getElementById('tourMachineSelect');
+  const allLabels=[...container.querySelectorAll('label[data-machine-id]')];
+  // D'abord les machines optimisées cochées, puis les non cochées
+  const optimizedIds=optimized.map(m=>m.id);
+  const sortedLabels=[
+    ...optimizedIds.map(id=>allLabels.find(l=>l.dataset.machineId===id)).filter(Boolean),
+    ...allLabels.filter(l=>!optimizedIds.includes(l.dataset.machineId))
+  ];
+  sortedLabels.forEach(l=>container.appendChild(l));
+  toast(`✅ Trajet optimisé — ${optimized.length} machines ordonnées`,'success');
+}
+
+// Utiliser GPS pour le point de départ
+function useTourGPS(){
+  if(!navigator.geolocation){toast('GPS non disponible','warn');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    _tourStartLat=pos.coords.latitude;
+    _tourStartLng=pos.coords.longitude;
+    document.getElementById('tourStartAddress').value='Ma position actuelle';
+    document.getElementById('tourStartCoords').textContent=`${_tourStartLat.toFixed(5)}, ${_tourStartLng.toFixed(5)}`;
+    toast('📍 Position GPS enregistrée','success');
+  },()=>toast('Impossible d\'obtenir la position','warn'));
+}
+
+// Utiliser l'adresse du siège (workspace settings)
+function useWorkspaceStart(){
+  const savedAddr=document.getElementById('notifStartAddress')?.value;
+  if(savedAddr){
+    document.getElementById('tourStartAddress').value=savedAddr;
+    document.getElementById('tourStartCoords').textContent='Adresse du siège';
+  } else {
+    toast('Aucune adresse de siège configurée dans les paramètres','warn');
+  }
+}
+
+// Géocoder une adresse → lat/lng via Nominatim (OpenStreetMap, gratuit)
+async function geocodeAddress(address){
+  if(!address)return null;
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,{headers:{'Accept-Language':'fr'}});
+    const data=await res.json();
+    if(data&&data[0])return{lat:parseFloat(data[0].lat),lng:parseFloat(data[0].lon)};
+  }catch(e){}
+  return null;
+}
+
+// Géocoder l'adresse de départ du workspace
+async function geocodeStartAddress(){
+  const addr=document.getElementById('notifStartAddress')?.value;
+  if(!addr){toast('Entrez une adresse','warn');return;}
+  toast('Recherche de l\'adresse…','info');
+  const coords=await geocodeAddress(addr);
+  if(coords){
+    document.getElementById('notifStartAddress').dataset.lat=coords.lat;
+    document.getElementById('notifStartAddress').dataset.lng=coords.lng;
+    toast(`📍 Trouvé : ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,'success');
+    notifConfigDirty=true;
+  }else{
+    toast('Adresse introuvable','warn');
+  }
+}
+
+// Créer la tournée
+async function createTour(){
+  const techSel=document.getElementById('tourTechSelect');
+  const tech_id=techSel?.value;
+  const tech_name=techSel?.options[techSel.selectedIndex]?.dataset?.name||'';
+  const tour_date=document.getElementById('tourDate')?.value;
+  if(!tech_id||!tour_date){toast('Technicien et date requis','warn');return;}
+  const checked=[...document.querySelectorAll('.tour-machine-cb:checked')];
+  if(!checked.length){toast('Sélectionnez au moins une machine','warn');return;}
+  // Récupérer l'ordre affiché dans le DOM (respecte l'optimisation)
+  const orderedLabels=[...document.getElementById('tourMachineSelect').querySelectorAll('label[data-machine-id]')];
+  const machinesList=orderedLabels
+    .filter(l=>l.querySelector('input:checked'))
+    .map((l,i)=>{
+      const id=l.dataset.machineId;
+      const m=machines[id]||{};
+      return{id,name:l.dataset.machineName||m.name||id,lat:parseFloat(l.dataset.machineLat)||m.lat||null,lng:parseFloat(l.dataset.machineLng)||m.lng||null,level:parseFloat(l.dataset.machineLevel)||null,status:'pending',order:i+1};
+    });
+  const start_address=document.getElementById('tourStartAddress')?.value||'';
+  // Géocoder si besoin
+  let start_lat=_tourStartLat, start_lng=_tourStartLng;
+  if(start_address&&!start_lat){
+    const coords=await geocodeAddress(start_address);
+    if(coords){start_lat=coords.lat;start_lng=coords.lng;}
+  }
+  const notes=document.getElementById('tourNotes')?.value||'';
+  const res=await authFetch('/api/tours',{method:'POST',body:JSON.stringify({tech_id,tech_name,tour_date,machines:machinesList,notes,start_address,start_lat,start_lng})});
+  if(!res||!res.ok){const e=await res?.json();toast('Erreur : '+(e?.error||'inconnue'),'warn');return;}
+  document.getElementById('newTourModal').classList.remove('open');
+  toast(`✅ Tournée créée pour ${tech_name} le ${tour_date}`,'success');
+  await loadTours();
+  // Aller sur l'onglet tournées
+  const t=document.querySelectorAll('.tabs .tab');
+  t.forEach(btn=>{if(btn.textContent.includes('Tournées'))switchTab('tournees',btn);});
+}
+
+// Ouvrir dans Google Maps
+function openTourGmaps(tourId){
+  const tour=toursData.find(t=>t.id===tourId);
+  if(!tour)return;
+  const machines=tour.machines||[];
+  const hasCoords=machines.filter(m=>m.lat&&m.lng);
+  if(!hasCoords.length){toast('Aucune coordonnée GPS pour ces machines','warn');return;}
+  let url='https://www.google.com/maps/dir/';
+  if(tour.start_lat&&tour.start_lng)url+=`${tour.start_lat},${tour.start_lng}/`;
+  url+=hasCoords.map(m=>`${m.lat},${m.lng}`).join('/');
+  window.open(url,'_blank');
+}
+
+// Navigation GPS pour la tournée du jour (tech)
+let _todayTour=null;
+function startTourNavigation(){
+  if(!_todayTour)return;
+  const ms=(_todayTour.machines||[]).filter(m=>m.status!=='done'&&m.lat&&m.lng);
+  if(!ms.length){toast('Toutes les machines sont faites !','success');return;}
+  let url='https://www.google.com/maps/dir/';
+  if(_todayTour.start_lat&&_todayTour.start_lng)url+=`${_todayTour.start_lat},${_todayTour.start_lng}/`;
+  url+=ms.map(m=>`${m.lat},${m.lng}`).join('/');
+  window.open(url,'_blank');
+}
+
+// Marquer tournée terminée (tech)
+async function markTourDone(){
+  if(!_todayTour)return;
+  const res=await authFetch(`/api/tours/${_todayTour.id}`,{method:'PUT',body:JSON.stringify({status:'done'})});
+  if(res&&res.ok){
+    _todayTour.status='done';
+    toast('Tournée marquée comme terminée ✅','success');
+    renderTechTodayTour();
+  }
+}
+
+// Charger et afficher la tournée du jour pour le tech
+async function loadAndShowTechTour(){
+  if(currentRole!=='tech')return;
+  const res=await authFetch('/api/tours/today');
+  if(!res||!res.ok)return;
+  _todayTour=await res.json();
+  renderTechTodayTour();
+}
+
+function renderTechTodayTour(){
+  const banner=document.getElementById('techTodayTourBanner');
+  if(!banner||!_todayTour){if(banner)banner.style.display='none';return;}
+  banner.style.display='block';
+  document.getElementById('techTodayTourDate').textContent=new Date(_todayTour.tour_date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const machines=_todayTour.machines||[];
+  document.getElementById('techTodayTourMachines').innerHTML=machines.map((m,i)=>`
+    <div class="tech-tour-machine ${m.status==='done'?'ttm-done':''}" onclick="markTourMachineDone('${m.id||i}')">
+      <div class="tech-tour-machine-num">${i+1}</div>
+      <div>
+        <div class="tech-tour-machine-name">${m.status==='done'?'<s>':''} ${m.name||m.id} ${m.status==='done'?'</s>':''}</div>
+        ${m.lat&&m.lng?`<div class="tech-tour-machine-addr">📍 ${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>`:''}
+      </div>
+      <span style="font-size:18px">${m.status==='done'?'✅':'○'}</span>
+    </div>`).join('');
+  // Bouton marquer terminée
+  const btn=document.getElementById('btnMarkTourDone');
+  if(btn)btn.style.display=_todayTour.status==='done'?'none':'';
+}
+
+// Marquer une machine de tournée comme faite (tech)
+async function markTourMachineDone(machineId){
+  if(!_todayTour||_todayTour.status==='done')return;
+  const machines=_todayTour.machines||[];
+  const m=machines.find(m=>(m.id||'')==machineId);
+  if(!m)return;
+  m.status=m.status==='done'?'pending':'done';
+  // Statut tour = active si au moins une machine faite
+  const anyDone=machines.some(m=>m.status==='done');
+  const allDone=machines.every(m=>m.status==='done');
+  _todayTour.status=allDone?'done':anyDone?'active':'pending';
+  await authFetch(`/api/tours/${_todayTour.id}`,{method:'PUT',body:JSON.stringify({machines,status:_todayTour.status})});
+  renderTechTodayTour();
+}
+
+// Supprimer une tournée (admin)
+async function deleteTour(id){
+  if(!confirm('Supprimer cette tournée ?'))return;
+  await authFetch(`/api/tours/${id}`,{method:'DELETE'});
+  await loadTours();
+  toast('Tournée supprimée','success');
+}
+
+// Changer le statut d'une tournée
+async function editTourStatus(id,currentStatus){
+  const statuses=['pending','active','done'];
+  const labels=['En attente','En cours','Terminée'];
+  const next=statuses[(statuses.indexOf(currentStatus)+1)%3];
+  await authFetch(`/api/tours/${id}`,{method:'PUT',body:JSON.stringify({status:next})});
+  const t=toursData.find(t=>t.id===id);
+  if(t)t.status=next;
+  renderToursList();
+  toast('Statut mis à jour : '+labels[statuses.indexOf(next)],'success');
+}
+
+// ══════════════════════════════════════════════
+// NOTIFICATIONS EMAIL — config
+// ══════════════════════════════════════════════
+
+async function saveNotifConfig(){
+  const email=document.getElementById('notifEmail')?.value?.trim()||null;
+  const days=parseInt(document.getElementById('notifMaintenanceDays')?.value)||7;
+  const addr=document.getElementById('notifStartAddress')?.value?.trim()||'';
+  const lat=parseFloat(document.getElementById('notifStartAddress')?.dataset?.lat)||null;
+  const lng=parseFloat(document.getElementById('notifStartAddress')?.dataset?.lng)||null;
+  const res=await authFetch('/api/workspaces/settings',{method:'POST',body:JSON.stringify({
+    prices,thresh_crit:threshCrit,thresh_warn:threshWarn,
+    notif_email:email,maintenance_days:days,
+    start_address:addr,start_lat:lat,start_lng:lng
+  })});
+  if(res&&res.ok){
+    notifConfigDirty=false;
+    const s=document.getElementById('notifConfigStatus');
+    if(s){s.textContent='✅ Enregistré';setTimeout(()=>s.textContent='',3000);}
+    toast('Paramètres de notifications enregistrés','success');
+  }
+}
+
+async function testNotifEmail(){
+  const email=document.getElementById('notifEmail')?.value?.trim();
+  if(!email){toast('Entrez un email','warn');return;}
+  toast('Envoi en cours…','info');
+  const res=await authFetch('/api/notify/test',{method:'POST',body:JSON.stringify({email})});
+  if(res&&res.ok)toast('📧 Email de test envoyé à '+email,'success');
+  else{const e=await res?.json();toast('Erreur : '+(e?.error||'vérifiez RESEND_API_KEY'),'warn');}
 }
 
 // ══ PWA — Service Worker + Install ══
@@ -3388,6 +3973,12 @@ if('serviceWorker' in navigator){
       <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     </span>
     <span class="mbnav-label">Alertes</span>
+  </button>
+  <button onclick="mbnav('tournees',this)" id="mbnavTournees">
+    <span class="mbnav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg>
+    </span>
+    <span class="mbnav-label">Tournées</span>
   </button>
 </div>
 </body>

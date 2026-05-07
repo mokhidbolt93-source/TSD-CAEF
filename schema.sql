@@ -50,11 +50,39 @@ CREATE TABLE IF NOT EXISTS interventions (
   done_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 6. Tournées de maintenance
+CREATE TABLE IF NOT EXISTS tours (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id  UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  tech_id       UUID REFERENCES users(id) ON DELETE SET NULL,
+  tech_name     TEXT DEFAULT '',
+  tour_date     DATE NOT NULL,
+  machines      JSONB DEFAULT '[]',
+  status        TEXT DEFAULT 'pending',  -- pending | active | done
+  start_address TEXT DEFAULT '',
+  start_lat     FLOAT,
+  start_lng     FLOAT,
+  notes         TEXT DEFAULT '',
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Colonnes supplémentaires pour workspace_settings
+ALTER TABLE workspace_settings
+  ADD COLUMN IF NOT EXISTS notif_email      TEXT,
+  ADD COLUMN IF NOT EXISTS maintenance_days INT DEFAULT 7,
+  ADD COLUMN IF NOT EXISTS start_address    TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS start_lat        FLOAT,
+  ADD COLUMN IF NOT EXISTS start_lng        FLOAT;
+
 -- Index pour les requêtes fréquentes
 CREATE INDEX IF NOT EXISTS idx_machines_workspace    ON machines(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_interventions_workspace ON interventions(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_interventions_done_at   ON interventions(done_at DESC);
 CREATE INDEX IF NOT EXISTS idx_users_workspace          ON users(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tours_workspace           ON tours(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tours_date                ON tours(tour_date DESC);
+ALTER TABLE tours ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "service_role_all" ON tours FOR ALL USING (true);
 
 -- ══════════════════════════════════════════════
 -- Row Level Security (RLS) — protège les données

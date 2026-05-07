@@ -136,18 +136,24 @@ router.post('/:id/enter', requireSuperAdmin, async (req, res) => {
 router.get('/settings', requireAuth, async (req, res) => {
   const { data } = await supabase.from('workspace_settings')
     .select('*').eq('workspace_id', req.user.workspaceId).single();
-  res.json(data || { prices: {}, thresh_crit: 15, thresh_warn: 35 });
+  res.json(data || { prices: {}, thresh_crit: 15, thresh_warn: 35, notif_email: '', maintenance_days: 7, start_address: '', start_lat: null, start_lng: null });
 });
 
 // POST /api/workspaces/settings  — sauvegarder les settings
 router.post('/settings', requireAuth, async (req, res) => {
-  const { prices, thresh_crit, thresh_warn } = req.body;
-  await supabase.from('workspace_settings').upsert({
-    workspace_id: req.user.workspaceId,
-    prices:       prices || {},
-    thresh_crit:  thresh_crit || 15,
-    thresh_warn:  thresh_warn || 35
-  }, { onConflict: 'workspace_id' });
+  const { prices, thresh_crit, thresh_warn, notif_email, maintenance_days, start_address, start_lat, start_lng } = req.body;
+  const payload = {
+    workspace_id:      req.user.workspaceId,
+    prices:            prices || {},
+    thresh_crit:       thresh_crit ?? 15,
+    thresh_warn:       thresh_warn ?? 35,
+    notif_email:       notif_email !== undefined ? notif_email : null,
+    maintenance_days:  maintenance_days !== undefined ? parseInt(maintenance_days) : 7,
+    start_address:     start_address || '',
+    start_lat:         start_lat ? parseFloat(start_lat) : null,
+    start_lng:         start_lng ? parseFloat(start_lng) : null
+  };
+  await supabase.from('workspace_settings').upsert(payload, { onConflict: 'workspace_id' });
   res.json({ ok: true });
 });
 
