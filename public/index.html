@@ -774,6 +774,174 @@ body.light #techView{background:var(--bg)}
 .photo-capture-btn:hover{border-color:var(--accent);color:var(--accent)}
 .photo-preview{width:80px;height:60px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
 
+/* ══════════════════════════════════════════════
+   DESIGN POLISH v2 — purement visuel, aucun
+   changement de layout ni de fonctionnalité
+   ══════════════════════════════════════════════ */
+
+/* ── Sélection & focus ── */
+::selection{background:rgba(79,156,249,.3);color:var(--text)}
+:focus-visible{outline:2px solid rgba(79,156,249,.5);outline-offset:2px}
+
+/* ── Scrollbars fines ── */
+*{scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);border:2px solid transparent;background-clip:padding-box}
+
+/* ── Nav : verre dépoli renforcé ── */
+nav{
+  background:rgba(11,13,18,.78);
+  backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border-bottom:1px solid rgba(79,156,249,.08);
+  box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 32px -12px rgba(0,0,0,.5);
+}
+body.light nav{background:rgba(245,247,255,.82);border-bottom-color:rgba(26,29,46,.06);box-shadow:0 8px 32px -16px rgba(26,29,46,.12)}
+.nav-brand{background:linear-gradient(120deg,var(--text) 30%,var(--accent) 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.nav-brand span{-webkit-text-fill-color:var(--accent)}
+.nbtn{border-radius:8px;transition:border-color .18s,color .18s,background .18s,transform .12s,box-shadow .18s}
+.nbtn:hover{transform:translateY(-1px);box-shadow:0 4px 14px -6px rgba(79,156,249,.35)}
+.nbtn:active{transform:translateY(0)}
+
+/* ── Stats bar : séparateurs doux + relief ── */
+.stats-bar{background:transparent;gap:0;border-bottom:1px solid var(--border)}
+.stat{background:linear-gradient(180deg,rgba(255,255,255,.015),transparent);border-right:1px solid var(--border);position:relative;transition:background .2s}
+.stat:last-child{border-right:none}
+.stat:hover{background:linear-gradient(180deg,rgba(79,156,249,.05),transparent)}
+.stat-v{font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-shadow:0 0 24px currentColor}
+body.light .stat-v{text-shadow:none}
+.stat-l{transition:color .2s}
+.stat:hover .stat-l{color:var(--muted2)}
+
+/* ── Tabs : soulignement lumineux + survol pill ── */
+.tabs{border-bottom:1px solid var(--border);gap:2px}
+.tab{border-radius:8px 8px 0 0;position:relative;transition:color .18s,background .18s}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.03)}
+body.light .tab:hover{background:rgba(26,29,46,.04)}
+.tab.active{background:linear-gradient(180deg,rgba(79,156,249,.08),transparent)}
+.tab.active::after{content:'';position:absolute;bottom:-2px;left:8px;right:8px;height:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 10px rgba(79,156,249,.7)}
+
+/* ── Cartes machines : profondeur + reflet ── */
+.card{
+  background:linear-gradient(165deg,var(--bg2) 0%,rgba(17,20,28,.96) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 2px 8px -2px rgba(0,0,0,.3);
+  transition:transform .22s cubic-bezier(.2,.8,.3,1.1),border-color .2s,box-shadow .25s;
+}
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px -12px rgba(79,156,249,.28),0 4px 12px -4px rgba(0,0,0,.4);
+}
+body.light .card{background:var(--bg2);box-shadow:0 2px 10px -4px rgba(26,29,46,.1)}
+body.light .card:hover{box-shadow:0 14px 30px -12px rgba(79,156,249,.3)}
+.card.warn:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px -12px rgba(245,158,11,.3)}
+.card.crit:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px -12px rgba(239,68,68,.35)}
+.card-head{background:rgba(255,255,255,.015)}
+.badge{border-radius:99px;padding:3px 9px;letter-spacing:.03em}
+
+/* ── Barres de niveau : glow + animation fluide ── */
+.bar-bg,.ing-bar-bg{box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+body.light .bar-bg,body.light .ing-bar-bg{box-shadow:inset 0 1px 2px rgba(26,29,46,.08)}
+.bar-fill,.ing-bar-fill{box-shadow:0 0 8px -1px currentColor;transition:width .7s cubic-bezier(.3,.9,.3,1)}
+
+/* ── Panels / sidebar ── */
+.panel,.ing-card,.chart-card,.price-card,.ca-summary-card,.telegram-panel,.hkpi{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 2px 10px -4px rgba(0,0,0,.35);
+}
+body.light .panel,body.light .ing-card,body.light .chart-card,body.light .price-card,body.light .ca-summary-card,body.light .telegram-panel,body.light .hkpi{box-shadow:0 2px 10px -5px rgba(26,29,46,.1)}
+.hkpi{transition:transform .2s,border-color .2s}
+.hkpi:hover{transform:translateY(-2px);border-color:var(--border2)}
+.hkpi-v{font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+
+/* ── Tableau historique ── */
+.histo-table th{background:linear-gradient(180deg,var(--bg3),rgba(24,28,39,.7))}
+body.light .histo-table th{background:var(--bg3)}
+.histo-table tr{transition:background .12s}
+.histo-table tr:hover td{background:rgba(79,156,249,.04)}
+.htype-badge{border-radius:99px}
+
+/* ── Boutons : interactions cohérentes ── */
+.cfg-btn,.login-btn,.btn-next,.btn-dash,.pwa-banner-btn,.notif-banner-btn,.tech-save-btn{
+  background-image:linear-gradient(135deg,var(--accent),#3b82e8);
+  box-shadow:0 4px 16px -6px rgba(79,156,249,.5),inset 0 1px 0 rgba(255,255,255,.18);
+  transition:transform .12s,box-shadow .2s,opacity .15s;
+}
+.cfg-btn:hover,.login-btn:hover,.btn-next:hover,.btn-dash:hover{opacity:1;transform:translateY(-1px);box-shadow:0 8px 22px -6px rgba(79,156,249,.6),inset 0 1px 0 rgba(255,255,255,.18)}
+.cfg-btn:active,.login-btn:active,.btn-next:active,.btn-dash:active{transform:translateY(0) scale(.98)}
+.btn-next.green{background-image:linear-gradient(135deg,var(--green),#2eb377);box-shadow:0 4px 16px -6px rgba(62,207,142,.5),inset 0 1px 0 rgba(255,255,255,.18)}
+.refill-btn,.export-btn,.histo-refresh,.histo-export,.tour-btn,.period-btn,.edit-btn,.qr-btn{transition:border-color .18s,color .18s,background .18s,transform .12s}
+.refill-btn:hover,.export-btn:hover,.histo-refresh:hover,.histo-export:hover,.tour-btn:hover,.edit-btn:hover,.qr-btn:hover{transform:translateY(-1px)}
+.tour-btn-nav{background-image:linear-gradient(135deg,var(--accent),#3b82e8);box-shadow:0 4px 14px -6px rgba(79,156,249,.5)}
+
+/* ── Inputs : focus plus doux ── */
+input[type=text],input[type=password],input[type=number],.cfg-in,.histo-search,.histo-select,.notif-config-in,textarea.cfg-in{
+  transition:border-color .18s,box-shadow .18s,background .18s;
+}
+input:focus,.cfg-in:focus,.histo-search:focus,.histo-select:focus,.notif-config-in:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(79,156,249,.12),0 0 18px -6px rgba(79,156,249,.3);
+}
+
+/* ── Modals : flou d'arrière-plan + ombre profonde ── */
+.modal-bg{background:rgba(5,7,12,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+body.light .modal-bg{background:rgba(26,29,46,.3)}
+.modal{
+  border-radius:18px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 24px 70px -20px rgba(0,0,0,.7),0 0 0 1px rgba(79,156,249,.06);
+  animation:modalIn .32s cubic-bezier(.2,.9,.3,1.05);
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+body.light .modal{box-shadow:0 24px 70px -20px rgba(26,29,46,.35)}
+
+/* ── Toasts : verre + glow latéral ── */
+.toast{
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(17,20,28,.85);
+  border-radius:12px;
+  box-shadow:0 8px 30px -8px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);
+}
+body.light .toast{background:rgba(255,255,255,.9)}
+.toast.success{box-shadow:0 8px 30px -8px rgba(62,207,142,.25),inset 0 1px 0 rgba(255,255,255,.05)}
+.toast.error{box-shadow:0 8px 30px -8px rgba(239,68,68,.3),inset 0 1px 0 rgba(255,255,255,.05)}
+.toast-dot{box-shadow:0 0 8px currentColor}
+
+/* ── Login : carte premium ── */
+.login-card{
+  border-radius:22px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 80px -30px rgba(0,0,0,.8),0 0 60px -30px rgba(79,156,249,.25);
+}
+body.light .login-card{box-shadow:0 30px 80px -35px rgba(26,29,46,.3)}
+.p-logo,.login-header .p-logo{filter:drop-shadow(0 0 18px rgba(79,156,249,.25))}
+
+/* ── Vue technicien ── */
+.ts-card{box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 2px 8px -3px rgba(0,0,0,.3);transition:transform .2s,border-color .2s}
+.ts-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.ts-v{font-variant-numeric:tabular-nums;text-shadow:0 0 20px currentColor}
+body.light .ts-v{text-shadow:none}
+
+/* ── Tournées : cartes avec accent latéral ── */
+.tour-card{
+  position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 2px 10px -4px rgba(0,0,0,.35);
+  transition:transform .22s cubic-bezier(.2,.8,.3,1.1),border-color .2s,box-shadow .25s;
+}
+.tour-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--accent);opacity:.55;transition:opacity .2s}
+.tour-card:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 34px -12px rgba(79,156,249,.25)}
+.tour-card:hover::before{opacity:1}
+.tour-num,.tech-tour-machine-num{background-image:linear-gradient(135deg,var(--accent),#3b82e8);box-shadow:0 2px 8px -2px rgba(79,156,249,.5)}
+.tour-badge{letter-spacing:.05em}
+
+/* ── Workspace cards ── */
+.ws-card{box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 2px 10px -4px rgba(0,0,0,.35);transition:transform .22s cubic-bezier(.2,.8,.3,1.1),border-color .2s,box-shadow .25s}
+.ws-card:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 34px -12px rgba(79,156,249,.25)}
+
+/* ── Leaflet : coins arrondis + ombre ── */
+#mapContainer,#techPosMap{box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 4px 18px -8px rgba(0,0,0,.5)}
+
+/* ── Apparition douce des vues ── */
+.view.active{animation:fadeUp .3s ease}
+
 /* ══ PRINT ══ */
 @media print{
   #loginScreen,#wsView,nav,.tabs,.stats-bar,#techView,.modal-bg,#toastContainer,#notifBanner,.del-btn,.nbtn,button{display:none!important}
