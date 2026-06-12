@@ -1,4 +1,4 @@
-const CACHE_NAME = 'necta-monitor-v7';
+const CACHE_NAME = 'necta-monitor-v8';
 
 // Ressources à mettre en cache pour fonctionner hors ligne
 const STATIC_ASSETS = [
@@ -40,7 +40,10 @@ self.addEventListener('activate', event => {
 
 // Stratégie de fetch :
 // - API calls → Network first (toujours frais), fallback cache
-// - Assets statiques → Cache first, fallback network
+// - Pages HTML (navigation) → Network first : les mises à jour du site
+//   sont visibles dès le premier rechargement, le cache ne sert
+//   qu'en mode hors ligne
+// - Assets statiques (libs CDN, icônes) → Cache first, fallback network
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
@@ -53,6 +56,20 @@ self.addEventListener('fetch', event => {
           { headers: { 'Content-Type': 'application/json' } }
         );
       })
+    );
+    return;
+  }
+
+  // Navigations + fichiers du site (même origine) → réseau d'abord
+  if (event.request.mode === 'navigate' || url.origin === self.location.origin) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok && event.request.method === 'GET') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request).then(c => c || caches.match('/index.html')))
     );
     return;
   }
