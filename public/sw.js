@@ -1,10 +1,12 @@
-const CACHE_NAME = 'necta-monitor-v6';
+const CACHE_NAME = 'necta-monitor-v7';
 
 // Ressources à mettre en cache pour fonctionner hors ligne
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/login3d.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
