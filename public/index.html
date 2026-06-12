@@ -942,6 +942,84 @@ body.light .ts-v{text-shadow:none}
 /* ── Apparition douce des vues ── */
 .view.active{animation:fadeUp .3s ease}
 
+/* ══════════════════════════════════════════════
+   ANIMATIONS PREMIUM v3
+   Entrées en cascade, compteurs animés, nav
+   réactive au scroll, parallax de fond.
+   Tout est désactivable via prefers-reduced-motion.
+   ══════════════════════════════════════════════ */
+
+/* ── Scroll doux natif ── */
+@media (prefers-reduced-motion: no-preference){
+  html{scroll-behavior:smooth}
+}
+
+/* ── Entrée en cascade des sections au changement d'onglet ──
+   Cible les enfants directs des vues : ils persistent dans le DOM
+   (seul leur contenu interne est re-rendu), donc l'animation ne se
+   rejoue qu'au changement d'onglet — jamais pendant les mises à
+   jour de données. */
+@keyframes viewChildIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.view.active>*{animation:viewChildIn .5s cubic-bezier(.22,.8,.3,1) both}
+.view.active>*:nth-child(2){animation-delay:.05s}
+.view.active>*:nth-child(3){animation-delay:.1s}
+.view.active>*:nth-child(4){animation-delay:.15s}
+.view.active>*:nth-child(5){animation-delay:.2s}
+.view.active>*:nth-child(n+6){animation-delay:.24s}
+
+/* ── Nav : glassmorphism qui s'intensifie au scroll ── */
+nav{transition:background .35s ease,box-shadow .35s ease,border-color .35s ease}
+nav.nav-scrolled{
+  background:rgba(11,13,18,.92);
+  border-bottom-color:rgba(79,156,249,.14);
+  box-shadow:0 1px 0 rgba(255,255,255,.04),0 12px 40px -12px rgba(0,0,0,.65);
+}
+body.light nav.nav-scrolled{background:rgba(245,247,255,.94);box-shadow:0 12px 40px -18px rgba(26,29,46,.2)}
+
+/* ── Compteurs : impulsion à chaque changement de valeur ── */
+@keyframes statPulse{
+  0%{transform:scale(1)}
+  35%{transform:scale(1.12);filter:brightness(1.3)}
+  100%{transform:scale(1);filter:none}
+}
+.stat-tick{animation:statPulse .45s cubic-bezier(.2,.8,.3,1)}
+
+/* ── Parallax ambiant : dérive très lente des halos de fond ──
+   transform uniquement (GPU), aucune incidence sur le layout. */
+@media (prefers-reduced-motion: no-preference){
+  @keyframes bgDrift{
+    0%{transform:translate(0,0) scale(1)}
+    50%{transform:translate(2.5%,1.5%) scale(1.04)}
+    100%{transform:translate(-1.5%,-1%) scale(1.02)}
+  }
+  body::before{animation:bgDrift 46s ease-in-out infinite alternate;will-change:transform}
+}
+
+/* ── Pression universelle des boutons (micro-feedback tactile) ── */
+@media (prefers-reduced-motion: no-preference){
+  button:not(:disabled){transition-property:transform,box-shadow,border-color,color,background,opacity;transition-duration:.16s}
+  button:not(:disabled):active{transform:scale(.97)}
+}
+
+/* ── Icônes nav mobile : rebond doux à l'activation ── */
+@keyframes iconBounce{0%{transform:translateY(0)}40%{transform:translateY(-3px) scale(1.08)}100%{transform:translateY(-1px)}}
+.mobile-bottom-nav button.mbnav-active .mbnav-icon{animation:iconBounce .35s cubic-bezier(.3,1.4,.5,1)}
+
+/* ── Lien / éléments interactifs : transition cohérente ── */
+.hist-item,.alert-item,.refill-log-item,.assign-tech-item{transition:background .15s,padding-left .15s}
+.hist-item:hover,.alert-item:hover{background:rgba(255,255,255,.02);padding-left:4px}
+body.light .hist-item:hover,body.light .alert-item:hover{background:rgba(26,29,46,.03)}
+
+/* ── Accessibilité : neutralise tout si l'utilisateur le demande ── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+
 /* ══ PRINT ══ */
 @media print{
   #loginScreen,#wsView,nav,.tabs,.stats-bar,#techView,.modal-bg,#toastContainer,#notifBanner,.del-btn,.nbtn,button{display:none!important}
@@ -4162,5 +4240,74 @@ if('serviceWorker' in navigator){
     <span class="mbnav-label">Tournées</span>
   </button>
 </div>
+
+<script>
+/* ══════════════════════════════════════════════
+   ANIMATIONS PREMIUM v3 — module JS autonome
+   - Nav glassmorphism qui s'intensifie au scroll
+   - Compteurs statistiques animés (count-up + pulse)
+   Aucune dépendance, aucun impact sur le code métier.
+   ══════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Nav : effet verre renforcé après 10px de scroll ──
+     requestAnimationFrame + passive → zéro jank, 60 FPS garanti */
+  const nav = document.querySelector('nav');
+  if(nav){
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        nav.classList.toggle('nav-scrolled', window.scrollY > 10);
+        ticking = false;
+      });
+    }, {passive:true});
+  }
+
+  if(reducedMotion) return; /* l'utilisateur préfère sans animation : on s'arrête là */
+
+  /* ── Compteurs animés ──
+     On observe les valeurs persistantes du DOM (stats bar + résumé
+     technicien). À chaque changement : impulsion visuelle, et si la
+     valeur est un entier, interpolation douce de l'ancienne vers la
+     nouvelle valeur (count-up 400ms, easing cubic). */
+  const counterIds = ['s1','s2','s3','s4','s5','s6','ts-total','ts-crit','ts-warn','ts-ok'];
+  counterIds.forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const obs = new MutationObserver(() => {
+      if(el.dataset.animating === '1') return; /* écriture interne du count-up : on ignore */
+      const newText = el.textContent.trim();
+      const newNum  = Number(newText);
+      const oldNum  = Number(el.dataset.prev);
+      el.dataset.prev = newText;
+
+      /* Impulsion : on relance l'animation CSS proprement */
+      el.classList.remove('stat-tick');
+      void el.offsetWidth; /* force le reflow pour réarmer l'animation */
+      el.classList.add('stat-tick');
+
+      /* Count-up : uniquement pour les entiers purs (les valeurs
+         formatées type "0.00 €" gardent juste l'impulsion) */
+      if(Number.isInteger(newNum) && Number.isFinite(oldNum) && Math.abs(newNum - oldNum) > 1){
+        el.dataset.animating = '1';
+        const start = performance.now(), dur = 400;
+        const step = t => {
+          const p = Math.min(1, (t - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3); /* ease-out cubic */
+          el.textContent = String(Math.round(oldNum + (newNum - oldNum) * eased));
+          if(p < 1) requestAnimationFrame(step);
+          else requestAnimationFrame(() => { delete el.dataset.animating; });
+        };
+        requestAnimationFrame(step);
+      }
+    });
+    obs.observe(el, {childList:true, characterData:true, subtree:true});
+  });
+})();
+</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'necta-monitor-v5';
+const CACHE_NAME = 'necta-monitor-v6';
 
 // Ressources à mettre en cache pour fonctionner hors ligne
 const STATIC_ASSETS = [
